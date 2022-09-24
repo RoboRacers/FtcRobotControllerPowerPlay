@@ -15,14 +15,13 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 public class RRtest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-
         waitForStart();
 
         if (isStopRequested()) return;
-        Pose2d StartPose = new Pose2d(6.4533,-68, Math.toRadians(359));
+        Pose2d StartPose = new Pose2d(24,0, Math.toRadians(360));
         drive.setPoseEstimate(StartPose);
         Trajectory traj = drive.trajectoryBuilder(StartPose)
-                .splineTo(new Vector2d(0, 0), 0)
+                .lineToLinearHeading(new Pose2d(48, 48, Math.toRadians(90)))
                 .build();
 
         drive.followTrajectory(traj);

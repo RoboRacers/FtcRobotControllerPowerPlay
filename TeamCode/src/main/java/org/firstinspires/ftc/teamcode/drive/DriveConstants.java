@@ -20,8 +20,8 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 1008;
-    public static final double MAX_RPM = 166.66;
+    public static final double TICKS_PER_REV = 844.230268;
+    public static final double MAX_RPM = 198.998;
 
     /*
      * Set RUN_USING_ENCODER to true to enable built-in hub velocity control using drive encoders.
@@ -33,7 +33,7 @@ public class DriveConstants {
      */
     public static final boolean RUN_USING_ENCODER = true;
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(20, 0, 5,
-            getMotorVelocityF(MAX_RPM / 60 * TICKS_PER_REV)); //voltage copy pasta is 12.847969220537776 in case
+            12.193956440428499); //voltage copy pasta is 12.847969220537776 in case
 //MAX_RPM / 60 * TICKS_PER_REV
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -45,8 +45,13 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 1.89; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 9.4; // in
-
+    public static double TRACK_WIDTH = 10.5; // in
+//3:1
+//Actual Gear Ratio: 2.89:1
+//4:1
+//Actual Gear Ratio: 3.61:1
+//5:1
+//Actual Gear Ratio: 5.23:1
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
      * the built-in velocity PID, *these values are fine as is*. However, if you do not have drive
@@ -64,7 +69,7 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 30;
+    public static double MAX_VEL = 36;
     public static double MAX_ACCEL = 30;
     public static double MAX_ANG_VEL = Math.toRadians(227.33691791967485);
     public static double MAX_ANG_ACCEL = Math.toRadians(141.1);
