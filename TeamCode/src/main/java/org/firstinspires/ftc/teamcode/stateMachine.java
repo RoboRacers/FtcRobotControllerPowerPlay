@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @Config
-@TeleOp(name = "servo_with_ball_pid", group = "Concept")
+@TeleOp(name = "stateMachine", group = "Concept")
 public class stateMachine extends LinearOpMode {
     public enum States{
         STATE_0, // This is first state at on opMode init. No buttons are pressed.
