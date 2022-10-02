@@ -26,7 +26,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
+import org.opencv.core.Core;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -51,9 +51,9 @@ public class openCVtrack extends LinearOpMode
         List<Integer> greenUpper = new ArrayList<Integer>();
 
 
-        greenLower.add(0);
-        greenLower.add(110);
-        greenLower.add(160);
+        greenLower.add(162);
+        greenLower.add(88);
+        greenLower.add(83);
 
         greenUpper.add(255);
         greenUpper.add(255);
@@ -139,7 +139,7 @@ public class openCVtrack extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
-            
+
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
             telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
@@ -215,35 +215,14 @@ public class openCVtrack extends LinearOpMode
          * constantly allocating and freeing large chunks of memory.
          */
 
-        @Override 
+        @Override
         public Mat processFrame(Mat input)
         {
-            /*
-             * IMPORTANT NOTE: the input Mat that is passed in as a parameter to this method
-             * will only dereference to the same image for the duration of this particular
-             * invocation of this method. That is, if for some reason you'd like to save a copy
-             * of this particular frame for later use, you will need to either clone it or copy
-             * it to another Mat.
-             */
+            Imgproc.cvtColor(input, input, Imgproc.COLOR_RGB2HSV);
+            Scalar lowHSV = new Scalar(162, 88, 83);
+            Scalar highHSV = new Scalar(255, 255, 255);
 
-            /*
-             * Draw a simple box around the middle 1/2 of the entire frame
-             */
-            Imgproc.rectangle(
-                    input,
-                    new Point(
-                            input.cols()/4,
-                            input.rows()/4),
-                    new Point(
-                            input.cols()*(3f/4f),
-                            input.rows()*(3f/4f)),
-                    new Scalar(0, 255, 0), 4);
-
-            /**
-             * NOTE: to see how to get data from your pipeline to your OpMode as well as how
-             * to change which stage of the pipeline is rendered to the viewport when it is
-             * tapped, please see {@link PipelineStageSwitchingExample}
-             */
+            Core.inRange(input, lowHSV, highHSV, input);
 
             return input;
         }
