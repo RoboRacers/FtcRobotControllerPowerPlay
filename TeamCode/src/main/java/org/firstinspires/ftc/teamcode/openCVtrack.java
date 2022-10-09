@@ -25,18 +25,24 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.core.MatOfPoint;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+import org.slf4j.IMarkerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 @TeleOp
 public class openCVtrack extends LinearOpMode
@@ -219,12 +225,34 @@ public class openCVtrack extends LinearOpMode
         public Mat processFrame(Mat input)
         {
             Imgproc.cvtColor(input, input, Imgproc.COLOR_RGB2HSV);
-            Scalar lowHSV = new Scalar(162, 88, 83);
+            Scalar lowHSV = new Scalar(0,120,98);
             Scalar highHSV = new Scalar(255, 255, 255);
-
             Core.inRange(input, lowHSV, highHSV, input);
+            Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+            Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6, 6));
 
-            return input;
+            Imgproc.erode(input, input, erodeElement);
+            Imgproc.dilate(input, input, dilateElement);
+            Mat binary = new Mat(input.rows(), input.cols(), input.type(), new Scalar(0));
+            List<MatOfPoint> contours = new ArrayList<>();
+            Mat hierarchey = new Mat();
+            Imgproc.findContours(input, contours, hierarchey, Imgproc.RETR_TREE,
+                    Imgproc.CHAIN_APPROX_SIMPLE);
+            Iterator<MatOfPoint> it = contours.iterator();
+            Mat draw = Mat.zeros(binary.size(), CvType.CV_8UC3);
+            for (int i = 0; i < contours.size(); i++) {
+                System.out.println(contours);
+                Scalar color = new Scalar(0, 0, 255);
+                //Drawing Contours
+                Imgproc.drawContours(draw, contours, i, color, 2, Imgproc.LINE_8, hierarchey, 2, new Point() ) ;
+                Point point1 = new Point(100,150);
+                Point point2 = new Point(500,300);
+                int thickness = 10;
+                Imgproc.rectangle(input,point1,point2,color,thickness);
+
+            }
+
+            return draw;
         }
 
         @Override

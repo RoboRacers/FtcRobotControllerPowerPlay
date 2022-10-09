@@ -70,7 +70,7 @@ public class ObjectDetection extends LinearOpMode {
    *  FreightFrenzy_BC.tflite  0: Ball,  1: Cube
    *  FreightFrenzy_DM.tflite  0: Duck,  1: Marker
    */
-    private static final String TFOD_MODEL_ASSET = "16481-TSE.tflite";
+    private static final String TFOD_MODEL_ASSET = "/sdcard/16481-TSE.tflite";
     private static final String[] LABELS = { "BLACK", "TSE"};
 
     /*
