@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -8,11 +7,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import org.firstinspires.ftc.teamcode.opencv.SignalDetection;
 
 
 @Config
 @TeleOp(name = "stateMachine", group = "Concept")
 public class WorkStateMachines extends LinearOpMode {
+
     public enum STATE_DRIVE{
         STATE_DRIVE_STOP,                    //drives stop
         STATE_DRIVE_FORWARD,                 //drives forward
@@ -78,6 +79,17 @@ public class WorkStateMachines extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
        // timer_1.startTime();
+
+        SignalDetection mySignalDetection = new SignalDetection();
+        int id = mySignalDetection.CheckSignal();
+
+        if(id == 0)
+            AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_0;
+        else if(id == 1)
+            AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_1;
+        else if(id == 2)
+            AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_2;
+
 
         waitForStart();
         if (isStopRequested()) return;
@@ -403,31 +415,6 @@ public class WorkStateMachines extends LinearOpMode {
                     //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ROADRUNNER_POS15:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-            }
-
-            switch (AprilTagState) {
-                case STATE_APRIL_TAG_SEARCH:
-                    //ToDo: Event to move to next state
-                    if(tag.id == 0)
-                        AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_0;
-                    if(tag.id == 1)
-                        AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_1;
-                    if(tag.id == 2)
-                        AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_2;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_APRIL_TAG_FOUND_0:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_APRIL_TAG_FOUND_1:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_APRIL_TAG_FOUND_2:
                     //ToDo: Event to move to next state
                     //ToDo: Action to be performed in this state.
                     break;
