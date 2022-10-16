@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @Config
 @TeleOp(name = "stateMachine", group = "Concept")
-public class workStateMachines extends LinearOpMode {
+public class WorkStateMachines extends LinearOpMode {
     public enum STATE_DRIVE{
         STATE_DRIVE_STOP,                    //drives stop
         STATE_DRIVE_FORWARD,                 //drives forward
