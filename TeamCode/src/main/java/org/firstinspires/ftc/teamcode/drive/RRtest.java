@@ -5,7 +5,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
+import com.acmerobotics.dashboard.*;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 /*
@@ -14,20 +14,21 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 @Autonomous(group = "drive")
 public class RRtest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         waitForStart();
 
         if (isStopRequested()) return;
-        Pose2d StartPose = new Pose2d(6.4533,-68, Math.toRadians(359));
+        Pose2d StartPose = new Pose2d(24,0, Math.toRadians(360));
         drive.setPoseEstimate(StartPose);
         Trajectory traj = drive.trajectoryBuilder(StartPose)
-                .splineTo(new Vector2d(0, 0), 0)
+                .lineToLinearHeading(new Pose2d(48, 48, Math.toRadians(90)))
                 .build();
-
+        Trajectory traj2 = drive.trajectoryBuilder(traj.end())
+                .splineToSplineHeading(new Pose2d(24,-24, Math.toRadians(180)), Math.toRadians(0))
+                        .build();
         drive.followTrajectory(traj);
-
-
+        drive.followTrajectory(traj2);
 
     }
 }

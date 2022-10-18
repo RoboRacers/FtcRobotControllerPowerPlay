@@ -34,6 +34,7 @@ public class newFrame extends LinearOpMode {
       if (isStopRequested()) return;
 
       while (opModeIsActive()) {
+         
          y = -gamepad1.left_stick_y; // Remember, this is reversed!
          x = gamepad1.left_stick_x * 0.98; // Counteract imperfect strafing
          rx = gamepad1.right_stick_x/2*-1; //increase speed by 2
