@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opencv;
+package org.firstinspires.ftc.teamcode.modules.opencv;
 
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;

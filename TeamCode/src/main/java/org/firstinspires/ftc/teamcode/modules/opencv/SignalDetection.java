@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opencv;
+package org.firstinspires.ftc.teamcode.modules.opencv;
 
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;

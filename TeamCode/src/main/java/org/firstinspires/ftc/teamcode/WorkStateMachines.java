@@ -9,11 +9,9 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.opencv.SignalDetection;
+import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import org.openftc.easyopencv.OpenCvCamera;
@@ -22,7 +20,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
 @Config
-@TeleOp(name = "stateMachine", group = "Concept")
+@TeleOp(name = "WorkStateMachines", group = "Concept")
 public class WorkStateMachines extends LinearOpMode {
 
     public enum STATE_DRIVE{

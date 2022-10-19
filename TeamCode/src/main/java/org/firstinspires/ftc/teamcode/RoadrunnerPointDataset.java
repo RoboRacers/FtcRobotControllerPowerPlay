@@ -24,7 +24,7 @@ public class RoadrunnerPointDataset {
     {
         // Type, Number, X, Y
         // Ground Junction
-        Array[] Points = {
+        /*Array[] Points = {
             {PointType.G, 0, 0, 0},
             {PointType.G, 1, 48, 0},
             {PointType.G, 2, 48, 48},
@@ -89,6 +89,6 @@ public class RoadrunnerPointDataset {
             {PointType.SP, 1, -64.5, 31.5},
             {PointType.SP, 2, -64.5, -31.5},
             {PointType.SP, 3, 64.5, -31.5}
-        };
+        }; */
     }
 }
