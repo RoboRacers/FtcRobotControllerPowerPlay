@@ -3,11 +3,22 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.opencv.SignalDetection;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
 @Config
@@ -71,6 +82,8 @@ public class WorkStateMachines extends LinearOpMode {
     public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
     public STATE_APRIL_TAG AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_SEARCH;
 
+    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
     // Timer to increment servo. Servo increment to next position when timer reach a set value
    // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
@@ -78,22 +91,60 @@ public class WorkStateMachines extends LinearOpMode {
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-       // timer_1.startTime();
+        // **********************************************************************
+        // April Tag detection Code
+        // **********************************************************************
+        OpenCvCamera camera;
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().
+                getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.
+                get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()  {
+            @Override
+            public void onOpened()  {
+                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+            }
 
-        SignalDetection mySignalDetection = new SignalDetection();
-        int id = mySignalDetection.CheckSignal();
+            @Override
+            public void onError(int errorCode)  {    }
+        });
 
-        if(id == 0)
-            AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_0;
-        else if(id == 1)
-            AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_1;
-        else if(id == 2)
-            AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_2;
+        SignalDetection mySignalDetection = new SignalDetection(camera);
+        int tagID = mySignalDetection.CheckSignal();
 
+        if(tagID == 0)        AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_0;
+        else if(tagID == 1)   AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_1;
+        else if(tagID == 2)   AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_2;
+        telemetry.addData("# Tag ID: ", tagID);
+        telemetry.update();
+        // **********************************************************************
+        // **********************************************************************
+
+
+        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         waitForStart();
+
         if (isStopRequested()) return;
+
         while(opModeIsActive()){
+            // **********************************************************************
+            // Drive Code
+            // **********************************************************************
+            drive.setWeightedDrivePower(
+                 new Pose2d(
+                     -gamepad1.left_stick_y,
+                     -gamepad1.left_stick_x, //imperfect strafing fix, must be tuned for new drivetrain
+                     -gamepad1.right_stick_x
+                 )
+            );
+
+            drive.update();
+            // **********************************************************************
+            // **********************************************************************
+
+
+
             switch(DriveState) {
                 case STATE_DRIVE_STOP:
                     //ToDo: Event to move to next state

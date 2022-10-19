@@ -1,3 +1,4 @@
+package org.firstinspires.ftc.teamcode;
 
 import java.io.*; 
 import java.util.*; 
@@ -20,10 +21,10 @@ public class RoadrunnerPointDataset {
         SP // Starting Point
     }
     public static void main(String[] args) 
-    { 
+    {
+        // Type, Number, X, Y
+        // Ground Junction
         Array[] Points = {
-            // Type, Number, X, Y
-            // Ground Junction
             {PointType.G, 0, 0, 0},
             {PointType.G, 1, 48, 0},
             {PointType.G, 2, 48, 48},

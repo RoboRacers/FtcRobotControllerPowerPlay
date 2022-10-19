@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opencv;
 
 import org.openftc.apriltag.AprilTagDetection;
+import org.openftc.easyopencv.OpenCvCamera;
+
 import java.util.ArrayList;
 
 public class SignalDetection {
@@ -12,7 +14,9 @@ public class SignalDetection {
 
     public AprilTagDetection tagOfInterest = null;
 
-    public SignalDetection() {
+    public SignalDetection(OpenCvCamera camera) {
+        camera.setPipeline(aprilTagDetectionPipeline);
+
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(0.045, fx, fy, cx, cy);
         ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
         if (currentDetections.size() != 0) {
