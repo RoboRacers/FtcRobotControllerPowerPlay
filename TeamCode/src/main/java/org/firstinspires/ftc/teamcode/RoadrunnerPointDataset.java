@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-import java.io.*; 
-import java.util.*; 
+
+import java.io.*;
+import java.util.*;
 public class RoadrunnerPointDataset {
     /*
      * This contains all the points for the field elements for roadrunner
     */
-
+/*
     enum PointType {
         G, // Ground
         L, // Low
@@ -91,4 +92,5 @@ public class RoadrunnerPointDataset {
             {PointType.SP, 3, 64.5, -31.5}
         };
     }
+    */
 }

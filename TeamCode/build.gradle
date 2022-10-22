@@ -34,3 +34,7 @@ dependencies {
     implementation 'com.acmerobotics.dashboard:dashboard:0.4.4'
     implementation 'com.github.Thermal-Equilibrium:homeostasis-FTC:1.0.6'
 }
+
+dependencies {
+    implementation 'org.openftc:apriltag:1.1.0'
+}
