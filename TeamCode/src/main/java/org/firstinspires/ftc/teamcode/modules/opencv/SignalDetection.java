@@ -13,6 +13,7 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
@@ -27,9 +28,19 @@ public class SignalDetection {
     public AprilTagDetection tagOfInterest = null;
 
     public SignalDetection(OpenCvCamera camera) {
-        camera.setPipeline(aprilTagDetectionPipeline);
 
-        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(0.045, fx, fy, cx, cy);
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()  {
+            @Override
+            public void onOpened()  {
+                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+                aprilTagDetectionPipeline = new AprilTagDetectionPipeline(0.045, fx, fy, cx, cy);
+                camera.setPipeline(aprilTagDetectionPipeline);
+            }
+
+            @Override
+            public void onError(int errorCode)  {    }
+        });
+
         ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
         if (currentDetections.size() != 0) {
             for (AprilTagDetection tag : currentDetections) {

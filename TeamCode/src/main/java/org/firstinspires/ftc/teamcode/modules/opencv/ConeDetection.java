@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode.opencv;
+package org.firstinspires.ftc.teamcode.modules.opencv;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -27,6 +27,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -39,6 +40,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
+// ToDo: Get localisation information for coneDetection to work in desired location
+//  and avoid detecting cone on the poll.
 /*
  * This is an advanced sample showcasing detecting and determining the orientation
  * of multiple Cones, switching the viewport output, and communicating the results
@@ -46,7 +50,10 @@ import java.util.List;
  */
 public class ConeDetection
 {
-    ConeOrientationAnalysisPipeline pipeline;
+    ConeDetectionPipeline ConeDetectionpipeline;
+
+    public final int RED_CONE  = 1;
+    public final int BLUE_CONE = 2;
 
     public ConeDetection(OpenCvCamera camera) {
 
@@ -54,386 +61,120 @@ public class ConeDetection
             @Override
             public void onOpened()  {
                 camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
-                pipeline = new ConeOrientationAnalysisPipeline();
-                camera.setPipeline(pipeline);
+                ConeDetectionpipeline = new ConeDetectionPipeline(BLUE_CONE);
+                camera.setPipeline(ConeDetectionpipeline);
             }
 
             @Override
             public void onError(int errorCode)  {    }
         });
-
-
-
-        // Figure out which cones the pipeline detected, and print them to telemetry
-        ArrayList<ConeOrientationAnalysisPipeline.AnalyzedCone> cones = pipeline.getDetectedCones();
-        if(cones.isEmpty())
-        {
-            //telemetry.addLine("No cones detected");
-        }
-        else
-        {
-            for(ConeOrientationAnalysisPipeline.AnalyzedCone cone : cones)
-            {
-                //telemetry.addLine(String.format("Cone: Orientation=%s, Angle=%f", cone.orientation.toString(), cone.angle));
-            }
-        }
     }
 
-    static class ConeOrientationAnalysisPipeline extends OpenCvPipeline
+    public Rect getBoundary()
     {
-        /** Our working image buffers */
-        Mat cbMat = new Mat();
-        Mat thresholdMat = new Mat();
-        Mat morphedThreshold = new Mat();
-        Mat contoursOnPlainImageMat = new Mat();
+        return ConeDetectionpipeline.getBoundary();
+    }
 
-        /** Threshold values */
-        static final int CB_CHAN_MASK_THRESHOLD = 80;
-        static final double DENSITY_UPRIGHT_THRESHOLD = 0.03;
+    static class ConeDetectionPipeline extends OpenCvPipeline
+    {
+        int cone_type=-1;
 
-        /** The elements we use for noise reduction */
-        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
-        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6, 6));
+        public Rect boundary = new Rect();
 
-        /** Colors */
-        static final Scalar TEAL = new Scalar(3, 148, 252);
-        static final Scalar PURPLE = new Scalar(158, 52, 235);
-        static final Scalar RED = new Scalar(255, 0, 0);
-        static final Scalar GREEN = new Scalar(0, 255, 0);
-        static final Scalar BLUE = new Scalar(0, 0, 255);
-
-        static final int CONTOUR_LINE_THICKNESS = 2;
-        static final int CB_CHAN_IDX = 2;
-
-        static class AnalyzedCone {
-            ConeOrientation orientation;
-            double angle;
-        }
-
-        enum ConeOrientation {
-            UPRIGHT,
-            NOT_UPRIGHT
-        }
-
-        ArrayList<AnalyzedCone> internalConeList = new ArrayList<>();
-        volatile ArrayList<AnalyzedCone> clientConeList = new ArrayList<>();
-
-        /** Some stuff to handle returning our various buffers  */
-        enum Stage
+        public ConeDetectionPipeline(int cone_type)
         {
-            FINAL,
-            Cb,
-            MASK,
-            MASK_NR,
-            CONTOURS;
-        }
-
-        Stage[] stages = Stage.values();
-
-        // Keep track of what stage the viewport is showing
-        int stageNum = 0;
-
-        @Override
-        public void onViewportTapped()
-        {
-            /** Note that this method is invoked from the UI thread
-             * so whatever we do here, we must do quickly. */
-            int nextStageNum = stageNum + 1;
-
-            if(nextStageNum >= stages.length)  {
-                nextStageNum = 0;
-            }
-            stageNum = nextStageNum;
+            cone_type=cone_type;
         }
 
         @Override
-        public Mat processFrame(Mat input)
+        public Mat processFrame(Mat frame)
         {
-            // We'll be updating this with new data below
-            internalConeList.clear();
+            // Make a working copy of the input matrix in HSV
+            Mat imgHSV = new Mat();
+            Mat coneMat = new Mat();
 
-            /** Run the image processing */
-            for(MatOfPoint contour : findContours(input)) { analyzeContour(contour, input); }
-
-            internalConeList = new ArrayList<>(internalConeList);
-
-            /** Decide which buffer to send to the viewport */
-            switch (stages[stageNum])  {
-                case Cb:        { return cbMat;  }
-                case FINAL:     { return input;  }
-                case MASK:      { return thresholdMat; }
-                case MASK_NR:   { return morphedThreshold; }
-                case CONTOURS:  { return contoursOnPlainImageMat; }
+            Imgproc.cvtColor(frame, imgHSV, Imgproc.COLOR_RGB2HSV);
+            //ToDo: Create different april Tag for RED and BLUE cones
+            if(cone_type==1) {
+                coneMat = redMask(imgHSV);
             }
-            return input;
-        }
-
-        public ArrayList<AnalyzedCone> getDetectedCones() { return clientConeList; }
-
-        ArrayList<MatOfPoint> findContours(Mat input)  {
-            /** A list we'll be using to store the contours we find */
-            ArrayList<MatOfPoint> contoursList = new ArrayList<>();
-
-            /** Convert the input image to YCrCb color space, then extract the Cb channel */
-            Imgproc.cvtColor(input, cbMat, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(cbMat, cbMat, CB_CHAN_IDX);
-
-            /** Threshold the Cb channel to form a mask, then run some noise reduction */
-            Imgproc.threshold(cbMat, thresholdMat, CB_CHAN_MASK_THRESHOLD, 255,
-                               Imgproc.THRESH_BINARY_INV);
-            morphMask(thresholdMat, morphedThreshold);
-
-            /** Ok, now actually look for the contours! We only look for external contours. */
-            Imgproc.findContours(morphedThreshold, contoursList, new Mat(),
-                    Imgproc.RETR_EXTERNAL,
-                    Imgproc.CHAIN_APPROX_NONE);
-
-            // We do draw the contours we find, but not to the main input buffer.
-            input.copyTo(contoursOnPlainImageMat);
-            Imgproc.drawContours(contoursOnPlainImageMat, contoursList, -1, BLUE, CONTOUR_LINE_THICKNESS, 8);
-
-            return contoursList;
-        }
-
-        void morphMask(Mat input, Mat output)
-        {
-            /** Apply some erosion and dilation for noise reduction */
-            Imgproc.erode(input, output, erodeElement);
-            Imgproc.erode(output, output, erodeElement);
-
-            Imgproc.dilate(output, output, dilateElement);
-            Imgproc.dilate(output, output, dilateElement);
-        }
-
-        void analyzeContour(MatOfPoint contour, Mat input) {
-            /** Transform the contour to a different format */
-            Point[] points = contour.toArray();
-            MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
-
-            /** Do a rect fit to the contour, and draw it on the screen */
-            RotatedRect rotatedRectFitToContour = Imgproc.minAreaRect(contour2f);
-            drawRotatedRect(rotatedRectFitToContour, input);
-
-            /** The angle OpenCV gives us can be ambiguous, so look at the shape of
-                the rectangle to fix that. */
-            double rotRectAngle = rotatedRectFitToContour.angle;
-            if (rotatedRectFitToContour.size.width < rotatedRectFitToContour.size.height) {
-                rotRectAngle += 90;
+            else if (cone_type==2) {
+                coneMat = blueMask(imgHSV);
             }
-
-            /** Figure out the slope of a line which would run through the middle, lengthwise
-               (Slope as in m from 'Y = mx + b') */
-            double midlineSlope = Math.tan(Math.toRadians(rotRectAngle));
-
-            /** We're going to split the this contour into two regions: one region for the points
-                which fall above the midline, and one region for the points which fall below.
-                We'll need a place to store the points as we split them, so we make ArrayLists */
-            ArrayList<Point> aboveMidline = new ArrayList<>(points.length/2);
-            ArrayList<Point> belowMidline = new ArrayList<>(points.length/2);
-
-            /** Ok, now actually split the contour into those two regions we discussed earlier! */
-            for(Point p : points) {
-                if(rotatedRectFitToContour.center.y - p.y > midlineSlope *
-                        (rotatedRectFitToContour.center.x - p.x))  {
-                    aboveMidline.add(p);
-                }
-                else {
-                    belowMidline.add(p);
-                }
-            }
-
-            /** Now that we've split the contour into those two regions, we analyze each
-                region independently. */
-            ContourRegionAnalysis aboveMidlineMetrics = analyzeContourRegion(aboveMidline);
-            ContourRegionAnalysis belowMidlineMetrics = analyzeContourRegion(belowMidline);
-
-            // Get out of dodge
-            if(aboveMidlineMetrics == null || belowMidlineMetrics == null) { return;  }
-
-            /** We're going to draw line from the center of the bounding rect, to outside
-             *  the bounding rect, in the direction of the side of the cone with the nubs. */
-            Point displOfOrientationLinePoint2 = computeDisplacementForSecondPointOfConeOrientationLine
-                    (rotatedRectFitToContour, rotRectAngle);
-
-            /**
-             * If the difference in the densities of the two regions exceeds the threshold,
-             * then we assume the cone is on its side. Otherwise, if the difference is inside
-             * of the threshold, we assume it's upright.
-             */
-            if(aboveMidlineMetrics.density < belowMidlineMetrics.density - DENSITY_UPRIGHT_THRESHOLD)
+            else
             {
-                /**
-                 * Assume the cone is on its side, with the top contour region being the
-                 * one which contains the nubs
-                 */
-
-                /** Draw that line we were just talking about */
-                Imgproc.line(
-                        input, /** Buffer we're drawing on */
-                        new Point( /** First point of the line (center of bounding rect) */
-                                rotatedRectFitToContour.center.x,
-                                rotatedRectFitToContour.center.y),
-                        new Point( /** Second point of the line (center - displacement we calculated earlier) */
-                                rotatedRectFitToContour.center.x-displOfOrientationLinePoint2.x,
-                                rotatedRectFitToContour.center.y-displOfOrientationLinePoint2.y),
-                        PURPLE, /** Color we're drawing the line in */
-                        2); /** Thickness of the line we're drawing */
-
-                /** We outline the contour region that we assumed to be the side with the nubs */
-                Imgproc.drawContours(input, aboveMidlineMetrics.listHolderOfMatOfPoint, -1, TEAL, 2, 8);
-
-                /** Compute the absolute angle of the cone */
-                double angle = -(rotRectAngle-90);
-
-                /** "Tag" the cone with text stating its absolute angle */
-                drawTagText(rotatedRectFitToContour, Integer.toString((int) Math.round(angle))+" deg", input);
-
-                AnalyzedCone analyzedCone = new AnalyzedCone();
-                analyzedCone.angle = angle;
-                analyzedCone.orientation = ConeOrientation.NOT_UPRIGHT;
-                internalConeList.add(analyzedCone);
+                // ToDO return with error
             }
-            else if(belowMidlineMetrics.density < aboveMidlineMetrics.density - DENSITY_UPRIGHT_THRESHOLD)
-            {
-                /**
-                 * Assume the cone is on its side, with the bottom contour region being the
-                 * one which contains the nubs
-                 */
 
-                /**  Draw that line we were just talking about */
-                Imgproc.line(
-                        input, /**  Buffer we're drawing on */
-                        new Point( /**  First point of the line (center + displacement we calculated earlier) */
-                                rotatedRectFitToContour.center.x+displOfOrientationLinePoint2.x,
-                                rotatedRectFitToContour.center.y+displOfOrientationLinePoint2.y),
-                        new Point( /**  Second point of the line (center of bounding rect) */
-                                rotatedRectFitToContour.center.x,
-                                rotatedRectFitToContour.center.y),
-                        PURPLE, /**  Color we're drawing the line in */
-                        2); /**  Thickness of the line we're drawing */
+            Mat imgRGB = new Mat(); // do we need do this ???
+            Mat imgGray = new Mat();
 
-                /**  We outline the contour region that we assumed to be the side with the nubs */
-                Imgproc.drawContours(input, belowMidlineMetrics.listHolderOfMatOfPoint, -1, TEAL, 2, 8);
+            Imgproc.cvtColor(coneMat, imgRGB, Imgproc.COLOR_HSV2RGB);
+            Imgproc.cvtColor(imgRGB, imgGray, Imgproc.COLOR_RGBA2GRAY);
 
-                /**  Compute the absolute angle of the cone */
-                double angle = -(rotRectAngle-270);
+            // Use Canny Edge Detection to find edges
+            Mat edges = new Mat();
+            Imgproc.Canny(imgGray, edges, 100, 250);
 
-                /**  "Tag" the cone with text stating its absolute angle */
-                drawTagText(rotatedRectFitToContour,  Integer.toString((int) Math.round(angle))+" deg", input);
+            // https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
+            // Oftentimes the edges are disconnected. findContours connects these edges.
+            // We then find the bounding rectangles of those contours
+            List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
-                AnalyzedCone analyzedCone = new AnalyzedCone();
-                analyzedCone.angle = angle;
-                analyzedCone.orientation = ConeOrientation.NOT_UPRIGHT;
-                internalConeList.add(analyzedCone);
+            Mat hierarchy = new Mat();
+
+            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL,
+                                 Imgproc.CHAIN_APPROX_SIMPLE);
+
+            MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
+            Rect[] boundRect = new Rect[contours.size()];
+
+            for (int i = 0; i < contours.size(); i++) {
+                contoursPoly[i] = new MatOfPoint2f();
+                Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
+                boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
             }
-            else {
-                /** Assume the cone is upright */
-                drawTagText(rotatedRectFitToContour, "UPRIGHT", input);
-                AnalyzedCone analyzedCone = new AnalyzedCone();
-                analyzedCone.angle = rotRectAngle;
-                analyzedCone.orientation = ConeOrientation.UPRIGHT;
-                internalConeList.add(analyzedCone);
+
+
+            for (int i = 0; i != boundRect.length; i++) {
+                Imgproc.rectangle(frame, boundRect[i], new Scalar(0.5, 76.9, 89.8));
+                boundary = boundRect[i];
             }
+
+            return frame; // return the mat with rectangles drawn
         }
 
-        static class ContourRegionAnalysis  {
-            /** This class holds the results of analyzeContourRegion() */
-            double hullArea;
-            double contourArea;
-            double density;
-            List<MatOfPoint> listHolderOfMatOfPoint;
-        }
-
-        static ContourRegionAnalysis analyzeContourRegion(ArrayList<Point> contourPoints)  {
-            /** drawContours() requires a LIST of contours (there's no singular drawContour()
-                method), so we have to make a list, even though we're only going to use a single
-                position in it...*/
-            MatOfPoint matOfPoint = new MatOfPoint();
-            matOfPoint.fromList(contourPoints);
-            List<MatOfPoint> listHolderOfMatOfPoint = Arrays.asList(matOfPoint);
-
-            /** Compute the convex hull of the contour */
-            MatOfInt hullMatOfInt = new MatOfInt();
-            Imgproc.convexHull(matOfPoint, hullMatOfInt);
-
-            /** Was the convex hull calculation successful? */
-            if(hullMatOfInt.toArray().length > 0)
-            {
-                /** The convex hull calculation tells us the INDEX of the points which
-                    which were passed in eariler which form the convex hull. That's all
-                    well and good, but now we need filter out that original list to find
-                    the actual POINTS which form the convex hull */
-                Point[] hullPoints = new Point[hullMatOfInt.rows()];
-                List<Integer> hullContourIdxList = hullMatOfInt.toList();
-
-                for (int i = 0; i < hullContourIdxList.size(); i++)  {
-                    hullPoints[i] = contourPoints.get(hullContourIdxList.get(i));
-                }
-
-                ContourRegionAnalysis analysis = new ContourRegionAnalysis();
-                analysis.listHolderOfMatOfPoint = listHolderOfMatOfPoint;
-
-                /** Compute the hull area */
-                analysis.hullArea = Imgproc.contourArea(new MatOfPoint(hullPoints));
-
-                /** Compute the original contour area */
-                analysis.contourArea = Imgproc.contourArea(listHolderOfMatOfPoint.get(0));
-
-                /** Compute the contour density. This is the ratio of the contour area to the
-                    area of the convex hull formed by the contour */
-                analysis.density = analysis.contourArea / analysis.hullArea;
-
-                return analysis;
-            }
-            else  {
-                return null;
-            }
-        }
-
-        static Point computeDisplacementForSecondPointOfConeOrientationLine(RotatedRect rect,
-                                                                            double unambiguousAngle)
+        public Rect getBoundary()
         {
-            /** Note: we return a point, but really it's not a point in space, we're
-                simply using it to hold X & Y displacement values from the middle point
-                of the bounding rect. */
-            Point point = new Point();
-
-            /** Figure out the length of the short side of the rect */
-            double shortSideLen = Math.min(rect.size.width, rect.size.height);
-
-            /** We draw a line that's 3/4 of the length of the short side of the rect */
-            double lineLength = shortSideLen * .75;
-
-            /** The line is to be drawn at 90 deg relative to the midline running through
-                the rect lengthwise */
-            point.x = (int) (lineLength * Math.cos(Math.toRadians(unambiguousAngle+90)));
-            point.y = (int) (lineLength * Math.sin(Math.toRadians(unambiguousAngle+90)));
-
-            return point;
+            return boundary;
         }
 
-        static void drawTagText(RotatedRect rect, String text, Mat mat)  {
-            Imgproc.putText(
-                    mat,                          /** The buffer we're drawing on */
-                    text,                         /** The text we're drawing */
-                    new Point(                    /** The anchor point for the text */
-                            rect.center.x-50,     /** x anchor point */
-                            rect.center.y+25),    /** y anchor point */
-                    Imgproc.FONT_HERSHEY_PLAIN,   /** Font */
-                    1,                            /** Font size */
-                    TEAL,                         /** Font color */
-                    1);                           /** Font thickness */
+        public Mat  blueMask(Mat imgHSV) {
+            Scalar lowHSV = new Scalar(110, 50, 50); // lower bound HSV for blue
+            Scalar highHSV = new Scalar(130, 255, 255); // higher bound HSV for blue
+            Mat mask = new Mat();
+            Core.inRange(imgHSV, lowHSV, highHSV, mask);
+            return mask;
         }
 
-        static void drawRotatedRect(RotatedRect rect, Mat drawOn)
-        {
-            /** Draws a rotated rect by drawing each of the 4 lines individually */
-            Point[] points = new Point[4];
-            rect.points(points);
+        public Mat redMask(Mat imgHSV) {
+            Scalar low1 = new Scalar(0, 70, 0);
+            Scalar high1 = new Scalar(10, 255, 255);
 
-            for(int i = 0; i < 4; ++i) {
-                Imgproc.line(drawOn, points[i], points[(i+1)%4], RED, 2);
-            }
+            Scalar low2 = new Scalar(170, 70, 50);
+            Scalar high2 = new Scalar(180, 255, 255);
+
+            Mat mask1 = new Mat();
+            Mat mask2 = new Mat();
+
+            Core.inRange(imgHSV, low1, high1, mask1);
+            Core.inRange(imgHSV, low2, high2, mask2);
+
+            Mat mask = new Mat();
+            //ToDO: Do we need this function for just ORing two maskes
+            Core.addWeighted(mask1, 1.0, mask2, 1.0, 0.0, mask);
+
+            return mask;
         }
     }
 }

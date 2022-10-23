@@ -4,24 +4,20 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
+import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
 @Config
 @TeleOp(name = "WorkStateMachines", group = "Concept")
-public class WorkStateMachines extends LinearOpMode {
+public class AutoopStateMachines extends LinearOpMode {
 
     public enum STATE_DRIVE{
         STATE_DRIVE_STOP,                    //drives stop
@@ -97,15 +93,6 @@ public class WorkStateMachines extends LinearOpMode {
                 getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.
                 get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()  {
-            @Override
-            public void onOpened()  {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode)  {    }
-        });
 
         SignalDetection mySignalDetection = new SignalDetection(camera);
         int tagID = mySignalDetection.CheckSignal();
