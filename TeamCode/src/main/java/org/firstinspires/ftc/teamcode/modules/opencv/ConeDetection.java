@@ -89,39 +89,48 @@ public class ConeDetection
         @Override
         public Mat processFrame(Mat frame)
         {
-            // Make a working copy of the input matrix in HSV
             Mat imgHSV = new Mat();
-            Mat coneMat = new Mat();
 
-            Imgproc.cvtColor(frame, imgHSV, Imgproc.COLOR_RGB2HSV);
-            //ToDo: Create different april Tag for RED and BLUE cones
-            if(cone_type==1) {
-                coneMat = redMask(imgHSV);
-            }
-            else if (cone_type==2) {
-                coneMat = blueMask(imgHSV);
-            }
-            else
-            {
-                // ToDO return with error
-            }
-
-            Mat imgRGB = new Mat(); // do we need do this ???
+            Mat imgRGB = new Mat();
             Mat imgGray = new Mat();
-
-            Imgproc.cvtColor(coneMat, imgRGB, Imgproc.COLOR_HSV2RGB);
-            Imgproc.cvtColor(imgRGB, imgGray, Imgproc.COLOR_RGBA2GRAY);
-
-            // Use Canny Edge Detection to find edges
             Mat edges = new Mat();
-            Imgproc.Canny(imgGray, edges, 100, 250);
+            Mat hierarchy = new Mat();
 
-            // https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
-            // Oftentimes the edges are disconnected. findContours connects these edges.
-            // We then find the bounding rectangles of those contours
+            Mat red_mask1 = new Mat();
+            Mat red_mask2 = new Mat();
+
+            Scalar red_low1 = new Scalar(0, 70, 0);
+            Scalar red_high1 = new Scalar(10, 255, 255);
+
+            Scalar red_low2 = new Scalar(170, 70, 50);
+            Scalar red_high2 = new Scalar(180, 255, 255);
+
+            Scalar blue_lowHSV = new Scalar(110, 50, 50); // lower bound HSV for blue
+            Scalar blue_highHSV = new Scalar(130, 255, 255); // higher bound HSV for blue
+
             List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
-            Mat hierarchy = new Mat();
+            cone_type = 1;
+
+            Imgproc.blur(frame, frame, new Size(27,27));
+
+            Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5,5));
+            Imgproc.erode(frame, frame, element);
+
+            Imgproc.cvtColor(frame, imgHSV, Imgproc.COLOR_RGB2HSV);
+
+            //ToDo: Create different april Tag for RED and BLUE cones
+            if(cone_type==1)       {
+                Core.inRange(imgHSV, red_low1, red_high1, red_mask1);
+                Core.inRange(imgHSV, red_low2, red_high2, red_mask2);
+                //ToDO: Do we need this function for just ORing two maskes
+                Core.addWeighted(red_mask1, 1.0, red_mask2, 1.0, 0.0, imgGray);
+            }
+            else if (cone_type==2) {
+                Core.inRange(imgHSV, blue_lowHSV, blue_highHSV, imgGray);
+            }
+
+            Imgproc.Canny(imgGray, edges, 100, 250);
 
             Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL,
                                  Imgproc.CHAIN_APPROX_SIMPLE);
@@ -131,50 +140,31 @@ public class ConeDetection
 
             for (int i = 0; i < contours.size(); i++) {
                 contoursPoly[i] = new MatOfPoint2f();
-                Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
-                boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+                MatOfPoint2f cPoly = new MatOfPoint2f(contours.get(i).toArray());
+                Imgproc.approxPolyDP(cPoly, contoursPoly[i], 3, true);
+
+                if (Imgproc.contourArea(cPoly) > 50 ) {
+                    boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+                    Imgproc.rectangle(frame, boundRect[i], new Scalar(0.5, 76.9, 89.8));
+                    boundary = boundRect[i];
+                    Integer x2 = boundRect[i].x + (int) boundRect[i].height / 2;
+                    Integer y2 = boundRect[i].y + (int) boundRect[i].width / 2;
+
+                    String text = "x: " + x2.toString() + ", y: " + y2.toString();
+
+                    Imgproc.putText(frame, text, new Point(x2 - 10, y2 - 10),
+                            Imgproc.FONT_HERSHEY_SIMPLEX, 0.5,
+                            new Scalar(0, 255, 0), 2);
+                }
             }
 
-
-            for (int i = 0; i != boundRect.length; i++) {
-                Imgproc.rectangle(frame, boundRect[i], new Scalar(0.5, 76.9, 89.8));
-                boundary = boundRect[i];
-            }
-
-            return frame; // return the mat with rectangles drawn
+            return frame;
         }
 
-        public Rect getBoundary()
-        {
-            return boundary;
-        }
+        public Rect getBoundary()  { return boundary; }
 
-        public Mat  blueMask(Mat imgHSV) {
-            Scalar lowHSV = new Scalar(110, 50, 50); // lower bound HSV for blue
-            Scalar highHSV = new Scalar(130, 255, 255); // higher bound HSV for blue
-            Mat mask = new Mat();
-            Core.inRange(imgHSV, lowHSV, highHSV, mask);
-            return mask;
-        }
+        public void  redMask(Mat imgHSV) {
 
-        public Mat redMask(Mat imgHSV) {
-            Scalar low1 = new Scalar(0, 70, 0);
-            Scalar high1 = new Scalar(10, 255, 255);
-
-            Scalar low2 = new Scalar(170, 70, 50);
-            Scalar high2 = new Scalar(180, 255, 255);
-
-            Mat mask1 = new Mat();
-            Mat mask2 = new Mat();
-
-            Core.inRange(imgHSV, low1, high1, mask1);
-            Core.inRange(imgHSV, low2, high2, mask2);
-
-            Mat mask = new Mat();
-            //ToDO: Do we need this function for just ORing two maskes
-            Core.addWeighted(mask1, 1.0, mask2, 1.0, 0.0, mask);
-
-            return mask;
         }
     }
 }

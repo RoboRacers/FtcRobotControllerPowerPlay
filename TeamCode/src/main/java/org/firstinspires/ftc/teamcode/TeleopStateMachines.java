@@ -20,7 +20,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 
 
 @Config
-@TeleOp(name = "WorkStateMachines", group = "Concept")
+@TeleOp(name = "TeleOp State Machines", group = "16481-Power-Play")
 public class TeleopStateMachines extends LinearOpMode {
 
     public enum STATE_DRIVE{
