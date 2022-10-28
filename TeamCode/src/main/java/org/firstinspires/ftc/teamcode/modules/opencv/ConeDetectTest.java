@@ -32,36 +32,59 @@ package org.firstinspires.ftc.teamcode.modules.opencv;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.teamcode.modules.opencv.ConeDetection;
+import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
-
+import org.openftc.easyopencv.OpenCvWebcam;
+import java.util.concurrent.TimeUnit;
 
 @TeleOp(name="Cone Detect OpMode", group="Linear Opmode")
 public class ConeDetectTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        OpenCvCamera camera;
+        OpenCvWebcam camera;
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().
                 getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.
                 get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
+        // ExposureControl expo =  camera.getExposureControl();
+        // expo.setExposure(160, TimeUnit.MILLISECONDS);
+
         ConeDetection myConeDetection = new ConeDetection(camera);
 
+        double coneCenterX = 0.0;
+
+        int location=-1;
+        while (location==-1)
+        {
+            if(gamepad1.a) location=0;
+            if(gamepad1.b) location=1;
+            if(gamepad1.x) location=2;
+            if(gamepad1.y) location=3;
+        }
+
+
+
+        telemetry.addData("Location: ", location);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
 
+        location = -1;
         if (isStopRequested()) return;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+
+            telemetry.addData("X = ", myConeDetection.getCenter());
 
             telemetry.update();
         }

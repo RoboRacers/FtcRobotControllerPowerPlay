@@ -21,6 +21,8 @@
 
 package org.firstinspires.ftc.teamcode.modules.opencv;
 
+import static java.lang.Thread.sleep;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
@@ -35,11 +37,9 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 
 // ToDo: Get localisation information for coneDetection to work in desired location
 //  and avoid detecting cone on the poll.
@@ -57,10 +57,11 @@ public class ConeDetection
 
     public ConeDetection(OpenCvCamera camera) {
 
+
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()  {
             @Override
             public void onOpened()  {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(1184,656, OpenCvCameraRotation.UPRIGHT);
                 ConeDetectionpipeline = new ConeDetectionPipeline(BLUE_CONE);
                 camera.setPipeline(ConeDetectionpipeline);
             }
@@ -68,18 +69,40 @@ public class ConeDetection
             @Override
             public void onError(int errorCode)  {    }
         });
+
+        while (ConeDetectionpipeline == null)
+        {}
     }
 
-    public Rect getBoundary()
+
+
+    public double getCenter()
     {
-        return ConeDetectionpipeline.getBoundary();
+        return ConeDetectionpipeline.getCenter();
     }
 
     static class ConeDetectionPipeline extends OpenCvPipeline
     {
         int cone_type=-1;
+        double centerX = 0.0;
+        Mat imgHSV = new Mat();
 
-        public Rect boundary = new Rect();
+        Mat imgRGB = new Mat();
+        Mat imgGray = new Mat();
+        Mat edges = new Mat();
+        Mat hierarchy = new Mat();
+
+        Mat red_mask1 = new Mat();
+        Mat red_mask2 = new Mat();
+
+        Scalar red_low1 = new Scalar(0, 70, 0);
+        Scalar red_high1 = new Scalar(10, 255, 255);
+
+        Scalar red_low2 = new Scalar(170, 70, 50);
+        Scalar red_high2 = new Scalar(180, 255, 255);
+
+        Scalar blue_lowHSV = new Scalar(110, 50, 50); // lower bound HSV for blue
+        Scalar blue_highHSV = new Scalar(130, 255, 255); // higher bound HSV for blue
 
         public ConeDetectionPipeline(int cone_type)
         {
@@ -89,32 +112,15 @@ public class ConeDetection
         @Override
         public Mat processFrame(Mat frame)
         {
-            Mat imgHSV = new Mat();
-
-            Mat imgRGB = new Mat();
-            Mat imgGray = new Mat();
-            Mat edges = new Mat();
-            Mat hierarchy = new Mat();
-
-            Mat red_mask1 = new Mat();
-            Mat red_mask2 = new Mat();
-
-            Scalar red_low1 = new Scalar(0, 70, 0);
-            Scalar red_high1 = new Scalar(10, 255, 255);
-
-            Scalar red_low2 = new Scalar(170, 70, 50);
-            Scalar red_high2 = new Scalar(180, 255, 255);
-
-            Scalar blue_lowHSV = new Scalar(110, 50, 50); // lower bound HSV for blue
-            Scalar blue_highHSV = new Scalar(130, 255, 255); // higher bound HSV for blue
 
             List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
             cone_type = 1;
 
-            Imgproc.blur(frame, frame, new Size(27,27));
+            Imgproc.blur(frame, frame, new Size(39,39));
 
             Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5,5));
+
             Imgproc.erode(frame, frame, element);
 
             Imgproc.cvtColor(frame, imgHSV, Imgproc.COLOR_RGB2HSV);
@@ -146,9 +152,11 @@ public class ConeDetection
                 if (Imgproc.contourArea(cPoly) > 50 ) {
                     boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
                     Imgproc.rectangle(frame, boundRect[i], new Scalar(0.5, 76.9, 89.8));
-                    boundary = boundRect[i];
+
                     Integer x2 = boundRect[i].x + (int) boundRect[i].height / 2;
                     Integer y2 = boundRect[i].y + (int) boundRect[i].width / 2;
+
+                    centerX = x2;
 
                     String text = "x: " + x2.toString() + ", y: " + y2.toString();
 
@@ -161,10 +169,7 @@ public class ConeDetection
             return frame;
         }
 
-        public Rect getBoundary()  { return boundary; }
+        public double getCenter()  { return centerX; }
 
-        public void  redMask(Mat imgHSV) {
-
-        }
     }
 }

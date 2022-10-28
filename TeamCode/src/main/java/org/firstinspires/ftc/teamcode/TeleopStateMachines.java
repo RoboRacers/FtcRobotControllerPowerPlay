@@ -90,7 +90,7 @@ public class TeleopStateMachines extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         // **********************************************************************
-        // April Tag detection Code
+        // cone detection Code
         // **********************************************************************
         OpenCvCamera camera;
         int cameraMonitorViewId = hardwareMap.appContext.getResources().
