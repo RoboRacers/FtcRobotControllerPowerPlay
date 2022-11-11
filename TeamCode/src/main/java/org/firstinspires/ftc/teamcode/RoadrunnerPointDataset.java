@@ -7,7 +7,7 @@ public class RoadrunnerPointDataset {
     /*
      * This contains all the points for the field elements for roadrunner
     */
-/*
+
     enum PointType {
         G, // Ground
         L, // Low
@@ -19,13 +19,17 @@ public class RoadrunnerPointDataset {
         SI, // Signal
         BSUB, // Blue Subsation
         RSUB, // Red Rubstation
-        SP // Starting Point
+        SP, // Starting Point
+        PP0, // Parking Position for SP0
+        PP1, // Parking Positionfor SP1
+        PP2, // Parking Position for SP2
+        PP3 // Parking Position for SP3
     }
     public static void main(String[] args) 
     {
         // Type, Number, X, Y
         // Ground Junction
-        Array[] Points = {
+        Object[][] Points = {
             {PointType.G, 0, 0, 0},
             {PointType.G, 1, 48, 0},
             {PointType.G, 2, 48, 48},
@@ -73,24 +77,46 @@ public class RoadrunnerPointDataset {
             {PointType.T, 3, 60, -60},
 
             // Signal
-            {PointType.SI, 0, 36, 36},
-            {PointType.SI, 1, -36, 36},
-            {PointType.SI, 2, -36, -36},
-            {PointType.SI, 3, 36, -36},
+            {PointType.SI, 0, 36, -36},
+            {PointType.SI, 1, 36, 36},
+            {PointType.SI, 2, -36, 36},
+            {PointType.SI, 3, -36, -36},
 
             // Blue Substation
-            {PointType.BSUB, 0, -60, 0},
+            {PointType.BSUB, 0, 0, -60},
 
             // Red SUbsation
-            {PointType.RSUB, 0, 60, 0},
+            {PointType.RSUB, 0, 0, -60},
 
+            // ONLY POINTS BELOW THIS LINE ARE UPDATED CORRECTLY
             // Starting Points
             // Subject to change based on the robot size
-            {PointType.SP, 0, 64.5, 31.5},
-            {PointType.SP, 1, -64.5, 31.5},
-            {PointType.SP, 2, -64.5, -31.5},
-            {PointType.SP, 3, 64.5, -31.5}
+            {PointType.SP, 0, 36, -64.5},  // 64.5, 36 -> 36, -64.5
+            {PointType.SP, 1, 36, 64.5},
+            {PointType.SP, 2, -36, 64.5},
+            {PointType.SP, 3, -36, -64.5},
+
+            // Parking Postions for SP 0
+            {PointType.PP0, 0, 12, -24},
+            {PointType.PP0, 1, 36, -24},
+            {PointType.PP0, 2, 60, -24},
+
+            // Parking Postions for SP 1
+            {PointType.PP1, 0, 60, 24},
+            {PointType.PP1, 1, 36, 24},
+            {PointType.PP1, 2, 12, 24},
+
+            // Parking Postions for SP 2
+            {PointType.PP2, 0, -12, 24},
+            {PointType.PP2, 1, -36, 24},
+            {PointType.PP2, 2, -60, 24},
+
+            // Parking Postions for SP 3
+            {PointType.PP3, 0, -60, -24},
+            {PointType.PP3, 1, -36, -24},
+            {PointType.PP3, 2, -12, -24}
+
         };
     }
-    */
+    
 }
