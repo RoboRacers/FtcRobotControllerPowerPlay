@@ -31,90 +31,148 @@ public class RoadrunnerPointDataset {
         // Ground Junction
         Object[][] Points = {
             {PointType.G, 0, 0, 0},
-            {PointType.G, 1, 48, 0},
-            {PointType.G, 2, 48, 48},
-            {PointType.G, 3, 0, 48},
-            {PointType.G, 4, -48, 48},
-            {PointType.G, 5, -48, 0},
-            {PointType.G, 6, -48, -48},
-            {PointType.G, 7, 0, -48},
-            {PointType.G, 8, 48, -48},
+            {PointType.G, 1, 0, -48},
+            {PointType.G, 2, 48, -48},
+            {PointType.G, 3, 48, 0},
+            {PointType.G, 4, 48, 48},
+            {PointType.G, 5, 0, 48},
+            {PointType.G, 6, -48, 48},
+            {PointType.G, 7, -48, 0},
+            {PointType.G, 8, -48, -48},
 
             // Low Junction
-            {PointType.L, 0, 48, 24},
-            {PointType.L, 1, 24, 48},
-            {PointType.L, 2, -24, 48},
-            {PointType.L, 3, -48, 24},
-            {PointType.L, 4, -48, -24},
-            {PointType.L, 5, -24, -48},
-            {PointType.L, 6, 24, -48},
-            {PointType.L, 7, 48, -24},
+            {PointType.L, 0, 24, -48},
+            {PointType.L, 1, 48, -24},
+            {PointType.L, 2, 48, 24},
+            {PointType.L, 3, 24, 48},
+            {PointType.L, 4, -24, 48},
+            {PointType.L, 5, -48, 24},
+            {PointType.L, 6, -48, -24},
+            {PointType.L, 7, -24, -48},
 
             // Medium Junction
-            {PointType.M, 0, 24, 24},
-            {PointType.M, 1, -24, 24},
-            {PointType.M, 2, -24, -24},
-            {PointType.M, 3, 24, -24},
+            {PointType.M, 0, 24, -24},
+            {PointType.M, 1, 24, 24},
+            {PointType.M, 2, -24, 24},
+            {PointType.M, 3, -24, -24},
             
             // High Junction
-            {PointType.H, 0, 24, 0},
-            {PointType.H, 1, 0, 24},
-            {PointType.H, 2, -24, 0},
-            {PointType.H, 3, 0, -24},
+            {PointType.H, 0, 0, -24},
+            {PointType.H, 1, 24, 0},
+            {PointType.H, 2, 0, 24},
+            {PointType.H, 3, -24, 0},
 
             // Blue Stack
-            {PointType.BS, 0, -12, 72},
-            {PointType.BS, 1, -12, -72},
+            {PointType.BS, 0, 72, 12},
+            {PointType.BS, 1, -72, 12},
 
             // Red Stack
-            {PointType.RS, 0, 12, 72},
-            {PointType.RS, 1, -12, -72},
+            {PointType.RS, 0, 72, -12},
+            {PointType.RS, 1, -72, -12},
 
             // Terminal
-            {PointType.T, 0, 60, 60},
-            {PointType.T, 1, -60, 60},
-            {PointType.T, 2, -60, -60},
-            {PointType.T, 3, 60, -60},
+            {PointType.T, 0, 60, -60},
+            {PointType.T, 1, 60, 60},
+            {PointType.T, 2, -60, 60},
+            {PointType.T, 3, -60, -60},
 
             // Signal
-            {PointType.SI, 0, 36, -36},
-            {PointType.SI, 1, 36, 36},
-            {PointType.SI, 2, -36, 36},
-            {PointType.SI, 3, -36, -36},
+            {PointType.SI, 0, -36, -36},
+            {PointType.SI, 1, 36, -36},
+            {PointType.SI, 2, 36, 36},
+            {PointType.SI, 3, -36, 36},
 
             // Blue Substation
-            {PointType.BSUB, 0, 0, -60},
+            {PointType.BSUB, 0, 60, 0},
 
             // Red SUbsation
-            {PointType.RSUB, 0, 0, -60},
+            {PointType.RSUB, 0, -60, 0},
 
-            // ONLY POINTS BELOW THIS LINE ARE UPDATED CORRECTLY
+            // 64.5, 36 -> 36, -64.5
+
             // Starting Points
             // Subject to change based on the robot size
-            {PointType.SP, 0, 36, -64.5},  // 64.5, 36 -> 36, -64.5
-            {PointType.SP, 1, 36, 64.5},
-            {PointType.SP, 2, -36, 64.5},
-            {PointType.SP, 3, -36, -64.5},
+            // 
+            {PointType.SP, 0, 36, -64.5, Math.toRadians(270)},  
+            {PointType.SP, 1, 36, 64.5, Math.toRadians(270)},
+            {PointType.SP, 2, -36, 64.5, Math.toRadians(-270)},
+            {PointType.SP, 3, -36, -64.5, Math.toRadians(-270)},
 
-            // Parking Postions for SP 0
-            {PointType.PP0, 0, 12, -24},
-            {PointType.PP0, 1, 36, -24},
-            {PointType.PP0, 2, 60, -24},
+            // Parking Postions for SP 0 (Red Right)
+            /*
+             * drive.trajectorySequenceBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
+             * #1 .lineTo(new Vector2d(36, -35))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(12, -35))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(12, -24))
+             * #2 .lineTo(new Vector2d(36, -24))
+             * #3 .lineTo(new Vector2d(36, -35))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(57.75, -35))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(57.75, -24))
+             */
+            {PointType.PP0, 1, 12, -24},
+            {PointType.PP0, 2, 36, -24},
+            {PointType.PP0, 3, 60, -24},
 
-            // Parking Postions for SP 1
-            {PointType.PP1, 0, 60, 24},
-            {PointType.PP1, 1, 36, 24},
-            {PointType.PP1, 2, 12, 24},
+            // Parking Postions for SP 1 (Blue Right)
+            /*
+             * drive.trajectorySequenceBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+             * #1 .lineTo(new Vector2d(36, 35))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(58, 35))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(58, 24))
+             * #2 .lineTo(new Vector2d(36, 24))
+             * #3 .lineTo(new Vector2d(36, 36))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(12, 36))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(12, 24))
+             */
+            {PointType.PP1, 1, 60, 24},
+            {PointType.PP1, 2, 36, 24},
+            {PointType.PP1, 3, 12, 24},
 
-            // Parking Postions for SP 2
-            {PointType.PP2, 0, -12, 24},
-            {PointType.PP2, 1, -36, 24},
-            {PointType.PP2, 2, -60, 24},
+            // Parking Postions for SP 2 (Blue Left)
+            /*
+             * drive.trajectorySequenceBuilder(new Pose2d(-36, 64.5, Math.toRadians(270)))
+             * #1 .lineTo(new Vector2d(-36, 35))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(-12, 35))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(-12, 24))
+             * #2 .lineTo(new Vector2d(-36, 24))
+             * #3 .lineTo(new Vector2d(-36, 35))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(-57.75, 35))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(-57.75, 24))
+             */
+            {PointType.PP2, 1, -12, 24},
+            {PointType.PP2, 2, -36, 24},
+            {PointType.PP2, 3, -60, 24},
 
-            // Parking Postions for SP 3
-            {PointType.PP3, 0, -60, -24},
-            {PointType.PP3, 1, -36, -24},
-            {PointType.PP3, 2, -12, -24}
+            // Parking Postions for SP 3 (Red Left)
+            /*
+             * drive.trajectorySequenceBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+             * #1 .lineTo(new Vector2d(-36, -36))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(-12, -36))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(-12, -24))
+             * #2 .lineTo(new Vector2d(-36, -24))
+             * #3 .lineTo(new Vector2d(-36, -36))
+                  .turn(Math.toRadians(-90))
+                  .lineTo(new Vector2d(-12, -36))
+                  .turn(Math.toRadians(90))
+                  .lineTo(new Vector2d(-12, -24))
+             */
+            {PointType.PP3, 1, -60, -24},
+            {PointType.PP3, 2, -36, -24},
+            {PointType.PP3, 3, -12, -24}
 
         };
     }
