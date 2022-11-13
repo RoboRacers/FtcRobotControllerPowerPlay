@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
@@ -84,6 +85,9 @@ public class TeleopStateMachines extends LinearOpMode {
 
     // Timer to increment servo. Servo increment to next position when timer reach a set value
    // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    DcMotor motorLeft;
+    DcMotor motorRight;
+    Servo claw;
 
     @Override
     public void runOpMode() {
@@ -103,7 +107,9 @@ public class TeleopStateMachines extends LinearOpMode {
         telemetry.update();
         // **********************************************************************
         // **********************************************************************
-
+        claw = hardwareMap.get(Servo.class, "claw");
+        motorLeft  = hardwareMap.get(DcMotor.class, "LiftLeft");
+        motorRight  = hardwareMap.get(DcMotor.class, "LiftRight");
 
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -126,9 +132,6 @@ public class TeleopStateMachines extends LinearOpMode {
             drive.update();
             // **********************************************************************
             // **********************************************************************
-
-
-
             switch(DriveState) {
                 case STATE_DRIVE_STOP:
                     //ToDo: Event to move to next state
@@ -236,22 +239,22 @@ public class TeleopStateMachines extends LinearOpMode {
 
             switch (ClawState) {
                 case STATE_CLAW_OPEN:
-                    //ToDo: Event to move to next state
+                    claw.setPosition(0);
+                    gamepad1.rumble(500);
                     if(gamepad2.left_bumper)
                         ClawState = STATE_CLAW.STATE_CLAW_CLOSED;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_CLAW_CLOSED:
-                    //ToDo: Event to move to next state
+                    claw.setPosition(1);
+                    gamepad1.rumble(500);
                     if(gamepad2.right_bumper)
                         ClawState = STATE_CLAW.STATE_CLAW_OPEN;
-                    //ToDo: Action to be performed in this state.
                     break;
             }
 
             switch (ArmState) {
                 case STATE_ARM_PICK:
-                    //ToDo: Event to move to next state
+                    setArmPosition(0);
                     if(gamepad2.a)
                         ArmState = STATE_ARM.STATE_ARM_LOW;
                     if(gamepad2.x)
@@ -266,10 +269,9 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ARM_LOW:
-                    //ToDo: Event to move to next state
+                    setArmPosition(50);
                     if(gamepad2.x)
                         ArmState = STATE_ARM.STATE_ARM_MED;
                     if(gamepad2.y)
@@ -284,10 +286,9 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ARM_MED:
-                    //ToDo: Event to move to next state
+                    setArmPosition(-500);
                     if(gamepad2.a)
                         ArmState = STATE_ARM.STATE_ARM_LOW;
                     if(gamepad2.y)
@@ -302,10 +303,9 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ARM_HIGH:
-                    //ToDo: Event to move to next state
+                    setArmPosition(-1000);
                     if(gamepad2.a)
                         ArmState = STATE_ARM.STATE_ARM_LOW;
                     if(gamepad2.x)
@@ -320,10 +320,10 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ARM_UP:
-                    //ToDo: Event to move to next state
+                case STATE_ARM_DOWN:
+                    setArmPosition(0);
                     if(gamepad2.a)
                         ArmState = STATE_ARM.STATE_ARM_LOW;
                     if(gamepad2.x)
@@ -336,26 +336,8 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ARM_DOWN:
-                    //ToDo: Event to move to next state
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ARM_EXTEND_BACK:
-                    //ToDo: Event to move to next state
                     if(gamepad2.a)
                         ArmState = STATE_ARM.STATE_ARM_LOW;
                     if(gamepad2.x)
@@ -368,10 +350,8 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_DOWN;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    //ToDo: Action to be performed in this state.
                     break;
                 case STATE_ARM_EXTEND_FRONT:
-                    //ToDo: Event to move to next state
                     if(gamepad2.a)
                         ArmState = STATE_ARM.STATE_ARM_LOW;
                     if(gamepad2.x)
@@ -384,7 +364,6 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_DOWN;
                     if(gamepad2.left_stick_y > 0.1)
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    //ToDo: Action to be performed in this state.
                     break;
             }
 
@@ -457,6 +436,25 @@ public class TeleopStateMachines extends LinearOpMode {
         }
     }
 
+    public void setArmPosition(int target)
+    {
+        if ((ArmState== STATE_ARM.STATE_ARM_DOWN) || (ArmState == STATE_ARM.STATE_ARM_UP)) {
+            motorLeft.setPower(gamepad2.right_stick_y);
+            motorRight.setPower(gamepad2.right_stick_y);
+        }  else  {
+            motorLeft.setPower(0);
+            motorRight.setPower(0);
+
+            motorRight.setTargetPosition(target);
+            motorLeft.setTargetPosition(target);
+
+            motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            motorLeft.setPower(.5);
+            motorRight.setPower(.5);
+        }
+    }
     /*
     public void ServoControl(Servo servoControl, double direction) {
         if(timer_1.milliseconds() >= 100) {
