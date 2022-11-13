@@ -174,6 +174,31 @@ public class RoadrunnerPointDataset {
             {PointType.PP3, 2, -36, -24},
             {PointType.PP3, 3, -12, -24}
 
+
+            /*
+             * Cycle w/ Medium Pole Preload (SP1,3)
+             * .forward(29)
+               .turn(Math.toRadians(-45))
+               .forward(5)
+               .waitSeconds(1.5)
+               .back(5)
+               .turn(Math.toRadians(45))
+             * Cycle w/ Medium Pole Preload (SP0, 2)
+             * .forward(29)
+               .turn(Math.toRadians(45))
+               .forward(5)
+               .waitSeconds(1.5)
+               .back(5)
+               .turn(Math.toRadians(-45))
+             * Parking After
+             * #1 .turn(Math.toRadians(90))
+                  .forward(21)
+                  .turn(Math.toRadians(-90))
+             * #2 nothing
+             * #3 .turn(Math.toRadians(-90))
+                  .forward(21)
+                  .turn(Math.toRadians(90))
+             */
         };
     }
     
