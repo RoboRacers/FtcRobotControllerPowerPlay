@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import org.firstinspires.ftc.teamcode.RoadrunnerPointDataset;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -78,23 +79,30 @@ public class AutoopStateMachines extends LinearOpMode {
         STATE_APRIL_TAG_FOUND_1,        //Switches to this if found at position 2 on field
         STATE_APRIL_TAG_FOUND_2         //Switches to this if found at position 3 on field
     }
+    public enum STATE_POSITION {
+        STATE_POSITION_SP9,
+        STATE_POSITION_SP0,
+        STATE_POSITION_SP1,
+        STATE_POSITION_SP2,
+        STATE_POSITION_SP3
+    }
 
     //Setting Current state for each section to desired starting state
-
     public STATE_DRIVE DriveState = STATE_DRIVE.STATE_DRIVE_STOP;
     public STATE_CLAW ClawState = STATE_CLAW.STATE_CLAW_OPEN;
     public STATE_ARM ArmState = STATE_ARM.STATE_ARM_PICK;
     public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
     public STATE_APRIL_TAG AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_SEARCH;
-
-    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+    public STATE_POSITION RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
 
     // Timer to increment servo. Servo increment to next position when timer reach a set value
-   // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     @Override
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry);
 
         // **********************************************************************
         // April Tag detection Code
@@ -105,20 +113,32 @@ public class AutoopStateMachines extends LinearOpMode {
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.
                 get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
-        SignalDetection mySignalDetection = new SignalDetection(camera);
-        int tagID = mySignalDetection.CheckSignal();
+        SignalDetection mySignalDetection = new SignalDetection(camera, (MultipleTelemetry) telemetry);
 
-        if(tagID == 0)        AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_0;
-        else if(tagID == 1)   AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_1;
-        else if(tagID == 2)   AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_FOUND_2;
-        telemetry.addData("# Tag ID: ", AprilTagState);
-        // writeToFile("test", );
+        int tagID=-1;
+
+        telemetry.addData("# Detecting AprilTag ","");
         telemetry.update();
+
         camera.closeCameraDevice();
         // **********************************************************************
         // **********************************************************************
 
-
+        boolean Done = false;
+        while(!Done) {
+            // tagID = mySignalDetection.CheckSignal();
+            tagID = 0;
+            if(gamepad1.x) RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
+            else if(gamepad1.y) RobotPosition = STATE_POSITION.STATE_POSITION_SP1;
+            else if(gamepad1.a) RobotPosition = STATE_POSITION.STATE_POSITION_SP3;
+            else if(gamepad1.b) RobotPosition = STATE_POSITION.STATE_POSITION_SP0;
+            else if(gamepad1.right_bumper) Done = true;
+            telemetry.addData("# Tag ID: ", tagID);
+            telemetry.addData("Position selected ", RobotPosition);
+            telemetry.update();
+        }
+        telemetry.addData("Position Confirmed ", RobotPosition);
+        telemetry.update();
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         waitForStart();
@@ -130,17 +150,47 @@ public class AutoopStateMachines extends LinearOpMode {
             // Drive Code
             // **********************************************************************
             drive.setWeightedDrivePower(
-                 new Pose2d(
-                     -gamepad1.left_stick_y,
-                     -gamepad1.left_stick_x, //imperfect strafing fix, must be tuned for new drivetrain
-                     -gamepad1.right_stick_x
-                 )
+                    new Pose2d(
+                            -gamepad1.left_stick_y,
+                            -gamepad1.left_stick_x, //imperfect strafing fix, must be tuned for new drivetrain
+                            -gamepad1.right_stick_x
+                    )
             );
 
             drive.update();
             // **********************************************************************
             // **********************************************************************
-            switch(DriveState) {
+
+            switch (RobotPosition) {
+                case STATE_POSITION_SP0:
+                    if(tagID == 0){ Trajectories.S0PP1(); }
+                    else if (tagID == 1) { Trajectories.S0PP2(); }
+                    else if (tagID == 2){  Trajectories.S0PP3(); }
+                    RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                    break;
+                case  STATE_POSITION_SP1:
+                    if(tagID == 0){ Trajectories.S1PP1(); }
+                    else if (tagID == 1) { Trajectories.S1PP2(); }
+                    else if (tagID == 2) { Trajectories.S1PP3(); }
+                    RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                    break;
+                case STATE_POSITION_SP2:
+                    telemetry.addData("Running Position ", RobotPosition);
+                    telemetry.update();
+                    if(tagID == 0) { Trajectories.S2PP1(); }
+                    else if (tagID == 1) { Trajectories.S2PP2(); }
+                    else if (tagID == 2) { Trajectories.S2PP3(); }
+                    RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                    break;
+                case STATE_POSITION_SP3:
+                    if(tagID == 0){ Trajectories.S3PP1(); }
+                    else if (tagID == 1) { Trajectories.S3PP2(); }
+                    else if (tagID == 2) { Trajectories.S3PP3(); }
+                    RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                    break;
+            }
+
+            switch (DriveState) {
                 case STATE_DRIVE_STOP:
                     //ToDo: Event to move to next state
                     if(gamepad1.left_stick_y > 0.1)
@@ -244,7 +294,6 @@ public class AutoopStateMachines extends LinearOpMode {
                 default:
                     break;
             }
-
             switch (ClawState) {
                 case STATE_CLAW_OPEN:
                     //ToDo: Event to move to next state
@@ -259,7 +308,6 @@ public class AutoopStateMachines extends LinearOpMode {
                     //ToDo: Action to be performed in this state.
                     break;
             }
-
             switch (ArmState) {
                 case STATE_ARM_PICK:
                     //ToDo: Event to move to next state
@@ -398,7 +446,6 @@ public class AutoopStateMachines extends LinearOpMode {
                     //ToDo: Action to be performed in this state.
                     break;
             }
-
             switch (RoadrunnerState) {
                 case STATE_ROADRUNNER_POS0:
                     //ToDo: Event to move to next state

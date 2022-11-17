@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.modules.opencv;
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -27,8 +29,11 @@ public class SignalDetection {
 
     public AprilTagDetection tagOfInterest = null;
 
-    public SignalDetection(OpenCvCamera camera) {
+    private MultipleTelemetry ltelementry;
 
+    public SignalDetection(OpenCvCamera camera, MultipleTelemetry telemetry) {
+
+        ltelementry = telemetry;
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()  {
             @Override
             public void onOpened()  {
@@ -38,9 +43,15 @@ public class SignalDetection {
             }
 
             @Override
-            public void onError(int errorCode)  {    }
+            public void onError(int errorCode)  {
+                telemetry.addData("Failed to open camera","");
+                telemetry.update();
+            }
         });
+    }
 
+    public int CheckSignal()
+    {
         ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
         if (currentDetections.size() != 0) {
             for (AprilTagDetection tag : currentDetections) {
@@ -50,10 +61,6 @@ public class SignalDetection {
                 }
             }
         }
-    }
-
-    public int CheckSignal()
-    {
         return tagOfInterest.id;
     }
 

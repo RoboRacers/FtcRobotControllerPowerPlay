@@ -1,13 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+
 import java.io.*;
 import java.util.*;
 public class RoadrunnerPointDataset {
     /*
      * This contains all the points for the field elements for roadrunner
-    */
-
+     */
     enum PointType {
         G, // Ground
         L, // Low
@@ -17,19 +24,319 @@ public class RoadrunnerPointDataset {
         RS, // Red sTack
         T, // Terminal
         SI, // Signal
-        BSUB, // Blue Subsation
-        RSUB, // Red Rubstation
+        BSUB, // Blue Substation
+        RSUB, // Red Substation
         SP, // Starting Point
-        PP0, // Parking Position for SP0
-        PP1, // Parking Positionfor SP1
-        PP2, // Parking Position for SP2
-        PP3 // Parking Position for SP3
+        PPl0, // Parking Position for SP0
+        PPl1, // Parking Position for SP1
+        PPl2, // Parking Position for SP2
+        PPl3 // Parking Position for SP3
     }
-    public static void main(String[] args) 
-    {
-        // Type, Number, X, Y
-        // Ground Junction
-        Object[][] Points = {
+
+    private SampleMecanumDrive lDrive;
+    private MultipleTelemetry ltelementry;
+
+    public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry) {
+        lDrive = drive;
+        ltelementry = telemetry;
+    }
+
+
+    public void S0PP1 () {
+
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
+                .lineTo(new Vector2d(36, -35))
+                .build();
+
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(12, -35))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(12, -24))
+                .build();
+
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+    }
+
+    public void S0PP2 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
+                .lineTo(new Vector2d(36, -24))
+                .build();
+        lDrive.followTrajectory(traj1);
+    }
+
+    public void S0PP3 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
+                .lineTo(new Vector2d(36, -35))
+                .build();
+
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(57.75, -35))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(57.75, -24))
+                .build();
+
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+        }
+
+
+    public void S1PP1 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                .lineTo(new Vector2d(36, 35))
+                .build();
+
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(58, 35))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(58, 24))
+                .build();
+
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+    }
+    public void S1PP2 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                .lineTo(new Vector2d(36, 24))
+                .build();
+        lDrive.followTrajectory(traj1);
+    }
+    public void S1PP3 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                .lineTo(new Vector2d(36, 36))
+                .build();
+
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(12, 36))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(12, 24))
+                .build();
+
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+        }
+
+    public void S2PP1 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(-36, 64.5, Math.toRadians(270)))
+                .lineTo(new Vector2d(-36, 35))
+                .build();
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(-12, 35))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(-12, 24))
+                .build();
+
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+    }
+    public void S2PP2 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(-36, 64.5, Math.toRadians(270)))
+                .lineTo(new Vector2d(-36, 24))
+                .build();
+        lDrive.followTrajectory(traj1);
+    }
+    public void S2PP3 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(-36, 64.5, Math.toRadians(270)))
+                .lineTo(new Vector2d(-36, 35))
+                .build();
+
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(-57.75, 35))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(-57.75, 24))
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+    }
+
+    public void S3PP1 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+                .lineTo(new Vector2d(-36, -36))
+                .build();
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(-57.75, -36))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(-57.75, -24))
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+    }
+    public void S3PP2 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+                .lineTo(new Vector2d(-36, -24))
+                .build();
+        lDrive.followTrajectory(traj1);
+    }
+    public void S3PP3 () {
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+                .lineTo(new Vector2d(-36, -36))
+                .build();
+
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .lineTo(new Vector2d(-12, -36))
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .lineTo(new Vector2d(-12, -24))
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+        }
+
+    /*
+    // Medium Pole Cyle w/ Preload Cone + Parking
+    class MediumCycle {
+        // Starting Point 0
+        class SP0 {
+            Trajectory PP1 = lDrive.trajectoryBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(-45))
+                    //.turn(Math.toRadians(90))
+                    .forward(21)
+                    //.turn(Math.toRadians(-90))
+                    .build();
+            Trajectory PP2 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(-45))
+                    .build();
+            Trajectory PP3 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(-45))
+                    //.turn(Math.toRadians(-90))
+                    .forward(21)
+                    //.turn(Math.toRadians(90))
+                    .build();
+        }
+        // Starting Point 1
+        class SP1 {
+            Trajectory PP1 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(-45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(45))
+                    //.turn(Math.toRadians(90))
+                    .forward(21)
+                    //.turn(Math.toRadians(-90))
+                    .build();
+            Trajectory PP2 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(-45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(45))
+                    .build();
+            Trajectory PP3 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(-45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(45))
+                    //.turn(Math.toRadians(-90))
+                    .forward(21)
+                    //.turn(Math.toRadians(90))
+                    .build();
+        }
+        // Starting Point 2
+        class SP2 {
+            Trajectory PP1 = lDrive.trajectoryBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(-45))
+                    //.turn(Math.toRadians(90))
+                    .forward(21)
+                    //.turn(Math.toRadians(-90))
+                    .build();
+            Trajectory PP2 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(-45))
+                    .build();
+            Trajectory PP3 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(-45))
+                    //.turn(Math.toRadians(-90))
+                    .forward(21)
+                    //.turn(Math.toRadians(90))
+                    .build();
+        }
+        // Starting Point 3
+        class SP3 {
+            Trajectory PP1 = lDrive.trajectoryBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(-45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(45))
+                    //.turn(Math.toRadians(90))
+                    .forward(21)
+                    //.turn(Math.toRadians(-90))
+                    .build();
+            Trajectory PP2 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(-45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(45))
+                    .build();
+            Trajectory PP3 = lDrive.trajectoryBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+                    .forward(29)
+                    //.turn(Math.toRadians(-45))
+                    .forward(5)
+                    //.waitSeconds(1.5)
+                    .back(5)
+                    //.turn(Math.toRadians(45))
+                    //.turn(Math.toRadians(-90))
+                    .forward(21)
+                    //.turn(Math.toRadians(90))
+                    .build();
+        }
+    }
+*/
+    // Type, Number, X, Y
+    // Ground Junction
+    Object[][] Points = {
             {PointType.G, 0, 0, 0},
             {PointType.G, 1, 0, -48},
             {PointType.G, 2, 48, -48},
@@ -55,7 +362,7 @@ public class RoadrunnerPointDataset {
             {PointType.M, 1, 24, 24},
             {PointType.M, 2, -24, 24},
             {PointType.M, 3, -24, -24},
-            
+
             // High Junction
             {PointType.H, 0, 0, -24},
             {PointType.H, 1, 24, 0},
@@ -92,89 +399,114 @@ public class RoadrunnerPointDataset {
 
             // Starting Points
             // Subject to change based on the robot size
-            // 
-            {PointType.SP, 0, 36, -64.5, Math.toRadians(270)},  
+            //
+            {PointType.SP, 0, 36, -64.5, Math.toRadians(270)},
             {PointType.SP, 1, 36, 64.5, Math.toRadians(270)},
             {PointType.SP, 2, -36, 64.5, Math.toRadians(-270)},
             {PointType.SP, 3, -36, -64.5, Math.toRadians(-270)},
 
             // Parking Postions for SP 0 (Red Right)
             /*
-             * drive.trajectorySequenceBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
-             * #1 .lineTo(new Vector2d(36, -35))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(12, -35))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(12, -24))
-             * #2 .lineTo(new Vector2d(36, -24))
-             * #3 .lineTo(new Vector2d(36, -35))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(57.75, -35))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(57.75, -24))
-             */
-            {PointType.PP0, 1, 12, -24},
-            {PointType.PP0, 2, 36, -24},
-            {PointType.PP0, 3, 60, -24},
+            * drive.trajectorySequenceBuilder(new Pose2d(36, -64.5, Math.toRadians(-270)))
+            * #1 .lineTo(new Vector2d(36, -35))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(12, -35))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(12, -24))
+            * #2 .lineTo(new Vector2d(36, -24))
+            * #3 .lineTo(new Vector2d(36, -35))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(57.75, -35))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(57.75, -24))
+            */
+            {PointType.PPl0, 1, 12, -24},
+            {PointType.PPl0, 2, 36, -24},
+            {PointType.PPl0, 3, 60, -24},
 
             // Parking Postions for SP 1 (Blue Right)
             /*
-             * drive.trajectorySequenceBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
-             * #1 .lineTo(new Vector2d(36, 35))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(58, 35))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(58, 24))
-             * #2 .lineTo(new Vector2d(36, 24))
-             * #3 .lineTo(new Vector2d(36, 36))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(12, 36))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(12, 24))
-             */
-            {PointType.PP1, 1, 60, 24},
-            {PointType.PP1, 2, 36, 24},
-            {PointType.PP1, 3, 12, 24},
+            * drive.trajectorySequenceBuilder(new Pose2d(36, 64.5, Math.toRadians(270)))
+            * #1 .lineTo(new Vector2d(36, 35))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(58, 35))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(58, 24))
+            * #2 .lineTo(new Vector2d(36, 24))
+            * #3 .lineTo(new Vector2d(36, 36))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(12, 36))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(12, 24))
+            */
+
+            {PointType.PPl1, 1, 60, 24},
+            {PointType.PPl1, 2, 36, 24},
+            {PointType.PPl1, 3, 12, 24},
 
             // Parking Postions for SP 2 (Blue Left)
             /*
-             * drive.trajectorySequenceBuilder(new Pose2d(-36, 64.5, Math.toRadians(270)))
-             * #1 .lineTo(new Vector2d(-36, 35))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(-12, 35))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(-12, 24))
-             * #2 .lineTo(new Vector2d(-36, 24))
-             * #3 .lineTo(new Vector2d(-36, 35))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(-57.75, 35))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(-57.75, 24))
-             */
-            {PointType.PP2, 1, -12, 24},
-            {PointType.PP2, 2, -36, 24},
-            {PointType.PP2, 3, -60, 24},
+            * drive.trajectorySequenceBuilder(new Pose2d(-36, 64.5, Math.toRadians(270)))
+            * #1 .lineTo(new Vector2d(-36, 35))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(-12, 35))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(-12, 24))
+            * #2 .lineTo(new Vector2d(-36, 24))
+            * #3 .lineTo(new Vector2d(-36, 35))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(-57.75, 35))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(-57.75, 24))
+            */
+            {PointType.PPl2, 1, -12, 24},
+            {PointType.PPl2, 2, -36, 24},
+            {PointType.PPl2, 3, -60, 24},
 
             // Parking Postions for SP 3 (Red Left)
             /*
-             * drive.trajectorySequenceBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
-             * #1 .lineTo(new Vector2d(-36, -36))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(-12, -36))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(-12, -24))
-             * #2 .lineTo(new Vector2d(-36, -24))
-             * #3 .lineTo(new Vector2d(-36, -36))
-                  .turn(Math.toRadians(-90))
-                  .lineTo(new Vector2d(-12, -36))
-                  .turn(Math.toRadians(90))
-                  .lineTo(new Vector2d(-12, -24))
-             */
-            {PointType.PP3, 1, -60, -24},
-            {PointType.PP3, 2, -36, -24},
-            {PointType.PP3, 3, -12, -24}
+            * drive.trajectorySequenceBuilder(new Pose2d(-36, -64.5, Math.toRadians(-270)))
+            * #1 .lineTo(new Vector2d(-36, -36))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(-12, -36))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(-12, -24))
+            * #2 .lineTo(new Vector2d(-36, -24))
+            * #3 .lineTo(new Vector2d(-36, -36))
+                 .turn(Math.toRadians(-90))
+                 .lineTo(new Vector2d(-12, -36))
+                 .turn(Math.toRadians(90))
+                 .lineTo(new Vector2d(-12, -24))
+            */
+            {PointType.PPl3, 1, -60, -24},
+            {PointType.PPl3, 2, -36, -24},
+            {PointType.PPl3, 3, -12, -24}
 
-        };
-    }
-    
+
+            /*
+            * Cycle w/ Medium Pole Preload (SP1,3)
+            * .forward(29)
+                 .turn(Math.toRadians(-45))
+                 .forward(5)
+                 .waitSeconds(1.5)
+                 .back(5)
+                 .turn(Math.toRadians(45))
+            * Cycle w/ Medium Pole Preload (SP0, 2)
+            * .forward(29)
+                 .turn(Math.toRadians(45))
+                 .forward(5)
+                 .waitSeconds(1.5)
+                 .back(5)
+                 .turn(Math.toRadians(-45))
+            * Parking After
+            * #1 .turn(Math.toRadians(90))
+                 .forward(21)
+                 .turn(Math.toRadians(-90))
+            * #2 nothing
+            * #3 .turn(Math.toRadians(-90))
+                 .forward(21)
+                 .turn(Math.toRadians(90))
+            */
+    };
+
 }

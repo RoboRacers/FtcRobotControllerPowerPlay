@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.firstinspires.ftc.teamcode.modules.opencv.ConeDetection;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
@@ -73,17 +72,27 @@ public class TeleopStateMachines extends LinearOpMode {
         STATE_APRIL_TAG_FOUND_2         //Switches to this if found at position 3 on field
     }
 
-    //Setting Current state for each section to desired starting state
-
+    /**
+     * Setting Current state for each section to desired starting state
+     */
     public STATE_DRIVE DriveState = STATE_DRIVE.STATE_DRIVE_STOP;
     public STATE_CLAW ClawState = STATE_CLAW.STATE_CLAW_OPEN;
     public STATE_ARM ArmState = STATE_ARM.STATE_ARM_PICK;
     public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
     public STATE_APRIL_TAG AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_SEARCH;
 
-    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+    /**
+     * Lift Level constants
+     */
+    final int LIFT_LEVEL_0 = 0;
+    final int LIFT_LEVEL_1 = -800;
+    final int LIFT_LEVEL_2 = -1000;
+    final int LIFT_LEVEL_3 = -1200;
 
-    // Timer to increment servo. Servo increment to next position when timer reach a set value
+    /**
+     * Timer to increment servo. Servo increment to next position when timer reach a set value
+     */
+
    // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     DcMotor motorLeft;
     DcMotor motorRight;
@@ -92,47 +101,46 @@ public class TeleopStateMachines extends LinearOpMode {
     @Override
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        // **********************************************************************
-        // cone detection Code
-        // **********************************************************************
+        /** **********************************************************************
+         * cone detection Code
+         **********************************************************************/
         OpenCvCamera camera;
         int cameraMonitorViewId = hardwareMap.appContext.getResources().
                 getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.
                 get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-
         ConeDetection myConeDetection = new ConeDetection(camera);
 
-        telemetry.update();
-        // **********************************************************************
-        // **********************************************************************
+        /** **********************************************************************
+         * Hardware map for Claw and Lift
+         **********************************************************************/
         claw = hardwareMap.get(Servo.class, "claw");
         motorLeft  = hardwareMap.get(DcMotor.class, "LiftLeft");
         motorRight  = hardwareMap.get(DcMotor.class, "LiftRight");
-
-        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         waitForStart();
 
         if (isStopRequested()) return;
 
         while(opModeIsActive()){
-            // **********************************************************************
-            // Drive Code
-            // **********************************************************************
+            /** **********************************************************************
+             * Drive Code
+             **********************************************************************/
             drive.setWeightedDrivePower(
                  new Pose2d(
-                     -gamepad1.left_stick_y,
-                     -gamepad1.left_stick_x, //imperfect strafing fix, must be tuned for new drivetrain
-                     -gamepad1.right_stick_x
+                     -gamepad1.left_stick_y*.75,
+                     -gamepad1.left_stick_x*.75, //imperfect strafing fix, must be tuned for new drivetrain
+                     -gamepad1.right_stick_x*.75
                  )
             );
-
             drive.update();
-            // **********************************************************************
-            // **********************************************************************
-            switch(DriveState) {
+            /** **********************************************************************
+             *
+             **********************************************************************/
+             switch(DriveState) {
                 case STATE_DRIVE_STOP:
                     //ToDo: Event to move to next state
                     if(gamepad1.left_stick_y > 0.1)
@@ -236,22 +244,31 @@ public class TeleopStateMachines extends LinearOpMode {
                 default:
                     break;
             }
-
+            /** **********************************************************************
+             *
+             **********************************************************************/
             switch (ClawState) {
                 case STATE_CLAW_OPEN:
                     claw.setPosition(0);
-                    gamepad1.rumble(500);
-                    if(gamepad2.left_bumper)
+                    if(gamepad2.left_bumper) {
                         ClawState = STATE_CLAW.STATE_CLAW_CLOSED;
+                        gamepad1.rumble(500);
+                        gamepad2.rumble(500);
+                    }
                     break;
                 case STATE_CLAW_CLOSED:
                     claw.setPosition(1);
                     gamepad1.rumble(500);
-                    if(gamepad2.right_bumper)
+                    if(gamepad2.right_bumper) {
                         ClawState = STATE_CLAW.STATE_CLAW_OPEN;
+                        gamepad1.rumble(500);
+                        gamepad2.rumble(500);
+                    }
                     break;
             }
-
+            /** **********************************************************************
+             *
+             **********************************************************************/
             switch (ArmState) {
                 case STATE_ARM_PICK:
                     setArmPosition(0);
@@ -366,8 +383,10 @@ public class TeleopStateMachines extends LinearOpMode {
                         ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
                     break;
             }
-
-            switch (RoadrunnerState) {
+            /** **********************************************************************
+             *
+             **********************************************************************/
+            switch (RoadrunnerState){
                 case STATE_ROADRUNNER_POS0:
                     //ToDo: Event to move to next state
                     //ToDo: Action to be performed in this state.
@@ -438,6 +457,8 @@ public class TeleopStateMachines extends LinearOpMode {
 
     public void setArmPosition(int target)
     {
+        if (motorLeft.isBusy() || motorRight.isBusy())
+            return;
         if ((ArmState== STATE_ARM.STATE_ARM_DOWN) || (ArmState == STATE_ARM.STATE_ARM_UP)) {
             motorLeft.setPower(gamepad2.right_stick_y);
             motorRight.setPower(gamepad2.right_stick_y);
