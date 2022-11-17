@@ -19,14 +19,6 @@ import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-
-
 @Config
 @Autonomous(name = "AutoOp State Machines", group = "16481-Power-Play")
 public class AutoopStateMachines extends LinearOpMode {
@@ -114,20 +106,16 @@ public class AutoopStateMachines extends LinearOpMode {
                 get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
         SignalDetection mySignalDetection = new SignalDetection(camera, (MultipleTelemetry) telemetry);
-
+        mySignalDetection.openConnection();
+        sleep(100);
         int tagID=-1;
 
         telemetry.addData("# Detecting AprilTag ","");
         telemetry.update();
 
-        camera.closeCameraDevice();
-        // **********************************************************************
-        // **********************************************************************
-
         boolean Done = false;
-        while(!Done) {
-            // tagID = mySignalDetection.CheckSignal();
-            tagID = 0;
+        while(!Done && !isStopRequested()) {
+            tagID = mySignalDetection.CheckSignal();
             if(gamepad1.x) RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
             else if(gamepad1.y) RobotPosition = STATE_POSITION.STATE_POSITION_SP1;
             else if(gamepad1.a) RobotPosition = STATE_POSITION.STATE_POSITION_SP3;
@@ -137,8 +125,16 @@ public class AutoopStateMachines extends LinearOpMode {
             telemetry.addData("Position selected ", RobotPosition);
             telemetry.update();
         }
+
         telemetry.addData("Position Confirmed ", RobotPosition);
         telemetry.update();
+
+        camera.closeCameraDevice();
+
+        // **********************************************************************
+        // **********************************************************************
+
+
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         waitForStart();

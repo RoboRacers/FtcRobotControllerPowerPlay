@@ -21,47 +21,72 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 
 public class SignalDetection {
+
+
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
     double fx = 578.272;
     double fy = 578.272;
     double cx = 402.145;
     double cy = 221.506;
 
-    public AprilTagDetection tagOfInterest = null;
-
-    private MultipleTelemetry ltelementry;
+    private MultipleTelemetry ltelemetry;
+    OpenCvCamera lcamera;
 
     public SignalDetection(OpenCvCamera camera, MultipleTelemetry telemetry) {
+        lcamera = camera;
+        ltelemetry = telemetry;
+    }
 
-        ltelementry = telemetry;
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()  {
+    public void openConnection() {
+        lcamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
-            public void onOpened()  {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+            public void onOpened() {
+                lcamera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
                 aprilTagDetectionPipeline = new AprilTagDetectionPipeline(0.045, fx, fy, cx, cy);
-                camera.setPipeline(aprilTagDetectionPipeline);
+                lcamera.setPipeline(aprilTagDetectionPipeline);
             }
 
             @Override
-            public void onError(int errorCode)  {
-                telemetry.addData("Failed to open camera","");
-                telemetry.update();
+            public void onError(int errorCode) {
+                ltelemetry.addData("Failed to open camera", "");
+                ltelemetry.update();
             }
         });
     }
 
-    public int CheckSignal()
-    {
+    public int CheckSignal() {
+
+        if (aprilTagDetectionPipeline == null)
+            return 0;
+
         ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+        AprilTagDetection tagOfInterest = null;
+
         if (currentDetections.size() != 0) {
+            boolean tagFound = false;
+
             for (AprilTagDetection tag : currentDetections) {
-                if (tag.id == 0 || tag.id == 1 || tag.id == 2) {
-                    tagOfInterest = tag;
-                    break;
+                if (tag != null) {
+                    if (tag.id == 0 || tag.id == 1 || tag.id == 2) {
+                        tagOfInterest = tag;
+                        tagFound = true;
+                        break;
+                    }
                 }
             }
+            if (tagFound) {
+                ltelemetry.addData("Tag of interest is in sight!\n\nLocation data: ", tagOfInterest.id);
+                return tagOfInterest.id;
+            } else {
+                ltelemetry.addLine("Don't see tag of interest :(");
+                if (tagOfInterest == null)
+                    ltelemetry.addLine("(The tag has never been seen)");
+                else
+                    ltelemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                ltelemetry.update();
+            }
         }
-        return tagOfInterest.id;
+        return 0;
     }
 
     class AprilTagDetectionPipeline extends OpenCvPipeline
@@ -122,7 +147,8 @@ public class SignalDetection {
             }
             else
             {
-                System.out.println("AprilTagDetectionPipeline.finalize(): nativeApriltagPtr was NULL");
+                ltelemetry.addData("AprilTagDetectionPipeline.finalize(): nativeApriltagPtr was NULL","");
+                ltelemetry.update();
             }
         }
 
