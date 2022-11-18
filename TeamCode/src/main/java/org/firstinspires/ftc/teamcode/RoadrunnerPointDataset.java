@@ -36,10 +36,10 @@ public class RoadrunnerPointDataset {
     private SampleMecanumDrive lDrive;
     private MultipleTelemetry ltelementry;
 
-    final Pose2d S0_POS = new Pose2d(36, -64.5, Math.toRadians(-270));
-    final Pose2d S1_POS = new Pose2d(36, 64.5, Math.toRadians(270));
-    final Pose2d S2_POS = new Pose2d(-36, 64.5, Math.toRadians(270));
-    final Pose2d S3_POS = new Pose2d(-36, -64.5, Math.toRadians(-270));
+    public final Pose2d S0_POS = new Pose2d(36, -64.5, Math.toRadians(-270));
+    public final Pose2d S1_POS = new Pose2d(36, 64.5, Math.toRadians(270));
+    public final Pose2d S2_POS = new Pose2d(-36, 64.5, Math.toRadians(270));
+    public final Pose2d S3_POS = new Pose2d(-36, -64.5, Math.toRadians(-270));
 
     public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry) {
         lDrive = drive;
@@ -62,7 +62,6 @@ public class RoadrunnerPointDataset {
     }
 
     public void S0PP1 () {
-        lDrive.setPoseEstimate(S0_POS);
         Trajectory traj1 = lDrive.trajectoryBuilder(S0_POS)
                 .lineTo(new Vector2d(36, -35))
                 .build();
@@ -80,7 +79,6 @@ public class RoadrunnerPointDataset {
     }
 
     public void S0PP2 () {
-        lDrive.setPoseEstimate(S0_POS);
         Trajectory traj1 = lDrive.trajectoryBuilder(S0_POS)
                 .lineTo(new Vector2d(36, -24))
                 .build();
@@ -88,8 +86,6 @@ public class RoadrunnerPointDataset {
     }
 
     public void S0PP3 () {
-        lDrive.setPoseEstimate(S0_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S0_POS)
                 .lineTo(new Vector2d(36, -35))
                 .build();
@@ -108,8 +104,6 @@ public class RoadrunnerPointDataset {
 
 
     public void S1PP1 () {
-        lDrive.setPoseEstimate(S1_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S1_POS)
                 .lineTo(new Vector2d(36, 35))
                 .build();
@@ -126,7 +120,6 @@ public class RoadrunnerPointDataset {
         lDrive.followTrajectory(traj3);
     }
     public void S1PP2 () {
-        lDrive.setPoseEstimate(S1_POS);
         Trajectory traj1 = lDrive.trajectoryBuilder(S1_POS)
                 .lineTo(new Vector2d(36, 24))
                 .build();
@@ -134,7 +127,6 @@ public class RoadrunnerPointDataset {
     }
 
     public void S1PP3 () {
-        lDrive.setPoseEstimate(S1_POS);
         Trajectory traj1 = lDrive.trajectoryBuilder(S1_POS)
                 .lineTo(new Vector2d(36, 36))
                 .build();
@@ -152,9 +144,6 @@ public class RoadrunnerPointDataset {
         }
 
     public void S2PP1 () {
-
-        lDrive.setPoseEstimate(S2_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S2_POS)
                 .lineTo(new Vector2d(-36, 35))
                 .build();
@@ -170,16 +159,12 @@ public class RoadrunnerPointDataset {
         lDrive.followTrajectory(traj3);
     }
     public void S2PP2 () {
-        lDrive.setPoseEstimate(S2_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S2_POS)
                 .lineTo(new Vector2d(-36, 24))
                 .build();
         lDrive.followTrajectory(traj1);
     }
     public void S2PP3 () {
-        lDrive.setPoseEstimate(S2_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S2_POS)
                 .lineTo(new Vector2d(-36, 35))
                 .build();
@@ -196,8 +181,6 @@ public class RoadrunnerPointDataset {
     }
 
     public void S3PP1 () {
-        lDrive.setPoseEstimate(S3_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S3_POS)
                 .lineTo(new Vector2d(-36, -36))
                 .build();
@@ -212,20 +195,15 @@ public class RoadrunnerPointDataset {
         lDrive.followTrajectory(traj3);
     }
     public void S3PP2 () {
-        lDrive.setPoseEstimate(S3_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S3_POS)
                 .lineTo(new Vector2d(-36, -24))
                 .build();
         lDrive.followTrajectory(traj1);
     }
     public void S3PP3 () {
-        lDrive.setPoseEstimate(S3_POS);
-
         Trajectory traj1 = lDrive.trajectoryBuilder(S3_POS)
                 .lineTo(new Vector2d(-36, -36))
                 .build();
-
         Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
                 .lineTo(new Vector2d(-12, -36))
                 .build();

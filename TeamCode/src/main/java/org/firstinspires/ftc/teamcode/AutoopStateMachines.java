@@ -93,8 +93,6 @@ public class AutoopStateMachines extends LinearOpMode {
     @Override
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry);
 
         // **********************************************************************
         // April Tag detection Code
@@ -116,69 +114,61 @@ public class AutoopStateMachines extends LinearOpMode {
         boolean Done = false;
         while(!Done && !isStopRequested()) {
             tagID = mySignalDetection.CheckSignal();
+            telemetry.addData("# Tag ID: ", tagID);
+            telemetry.addData("Position selected ", RobotPosition);
             if(gamepad1.x) RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
             else if(gamepad1.y) RobotPosition = STATE_POSITION.STATE_POSITION_SP1;
             else if(gamepad1.a) RobotPosition = STATE_POSITION.STATE_POSITION_SP3;
             else if(gamepad1.b) RobotPosition = STATE_POSITION.STATE_POSITION_SP0;
-            else if(gamepad1.right_bumper) Done = true;
-            telemetry.addData("# Tag ID: ", tagID);
-            telemetry.addData("Position selected ", RobotPosition);
+            else if(gamepad1.right_bumper)
+            {
+                telemetry.addData("Position Confirmed ", RobotPosition);
+                Done = true;
+            }
             telemetry.update();
         }
-
-        telemetry.addData("Position Confirmed ", RobotPosition);
-        telemetry.update();
 
         camera.closeCameraDevice();
 
         // **********************************************************************
         // **********************************************************************
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry);
 
 
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
 
         waitForStart();
 
         if (isStopRequested()) return;
 
         while(opModeIsActive()){
-            // **********************************************************************
-            // Drive Code
-            // **********************************************************************
-            drive.setWeightedDrivePower(
-                    new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x, //imperfect strafing fix, must be tuned for new drivetrain
-                            -gamepad1.right_stick_x
-                    )
-            );
-
-            drive.update();
-            // **********************************************************************
-            // **********************************************************************
-
             switch (RobotPosition) {
                 case STATE_POSITION_SP0:
+                    drive.setPoseEstimate(Trajectories.S0_POS);
                     if(tagID == 0){ Trajectories.S0PP1(); }
                     else if (tagID == 1) { Trajectories.S0PP2(); }
                     else if (tagID == 2){  Trajectories.S0PP3(); }
                     RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                     break;
                 case  STATE_POSITION_SP1:
+                    drive.setPoseEstimate(Trajectories.S1_POS);
                     if(tagID == 0){ Trajectories.S1PP1(); }
                     else if (tagID == 1) { Trajectories.S1PP2(); }
                     else if (tagID == 2) { Trajectories.S1PP3(); }
                     RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                     break;
                 case STATE_POSITION_SP2:
-                    telemetry.addData("Running Position ", RobotPosition);
-                    telemetry.update();
+                    drive.setPoseEstimate(Trajectories.S2_POS);
                     if(tagID == 0) { Trajectories.S2PP1(); }
                     else if (tagID == 1) { Trajectories.S2PP2(); }
                     else if (tagID == 2) { Trajectories.S2PP3(); }
                     RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                     break;
                 case STATE_POSITION_SP3:
+                    drive.setPoseEstimate(Trajectories.S3_POS);
                     if(tagID == 0){ Trajectories.S3PP1(); }
                     else if (tagID == 1) { Trajectories.S3PP2(); }
                     else if (tagID == 2) { Trajectories.S3PP3(); }
