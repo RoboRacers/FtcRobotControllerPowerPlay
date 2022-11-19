@@ -71,6 +71,8 @@ public class AutoopStateMachines extends LinearOpMode {
         STATE_APRIL_TAG_FOUND_1,        //Switches to this if found at position 2 on field
         STATE_APRIL_TAG_FOUND_2         //Switches to this if found at position 3 on field
     }
+
+    boolean CYCLE = false;
     public enum STATE_POSITION {
         STATE_POSITION_SP9,
         STATE_POSITION_SP0,
@@ -86,6 +88,7 @@ public class AutoopStateMachines extends LinearOpMode {
     public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
     public STATE_APRIL_TAG AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_SEARCH;
     public STATE_POSITION RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+
 
     // Timer to increment servo. Servo increment to next position when timer reach a set value
     // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -105,6 +108,7 @@ public class AutoopStateMachines extends LinearOpMode {
 
         SignalDetection mySignalDetection = new SignalDetection(camera, (MultipleTelemetry) telemetry);
         mySignalDetection.openConnection();
+
         sleep(100);
         int tagID=-1;
 
@@ -147,6 +151,7 @@ public class AutoopStateMachines extends LinearOpMode {
         while(opModeIsActive()){
             switch (RobotPosition) {
                 case STATE_POSITION_SP0:
+
                     drive.setPoseEstimate(Trajectories.S0_POS);
                     if(tagID == 0){ Trajectories.S0PP1(); }
                     else if (tagID == 1) { Trajectories.S0PP2(); }
@@ -162,7 +167,7 @@ public class AutoopStateMachines extends LinearOpMode {
                     break;
                 case STATE_POSITION_SP2:
                     drive.setPoseEstimate(Trajectories.S2_POS);
-                    if(tagID == 0) { Trajectories.S2PP1(); }
+                    if (tagID == 0) { Trajectories.S2PP1(); }
                     else if (tagID == 1) { Trajectories.S2PP2(); }
                     else if (tagID == 2) { Trajectories.S2PP3(); }
                     RobotPosition = STATE_POSITION.STATE_POSITION_SP9;

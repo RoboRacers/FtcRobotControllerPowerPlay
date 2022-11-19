@@ -213,7 +213,39 @@ public class RoadrunnerPointDataset {
         lDrive.followTrajectory(traj1);
         lDrive.followTrajectory(traj2);
         lDrive.followTrajectory(traj3);
-        }
+    }
+
+    public Pose2d S2PP0MediumCycle1 () {
+
+        Trajectory traj1 = lDrive.trajectoryBuilder(S2_POS)
+                .forward(29)
+                .build();
+                //.turn(Math.toRadians(45))
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .forward(5)
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.turn(Math.toRadians(45));
+        lDrive.followTrajectory(traj2);
+        // Lift Stuff
+        return traj2.end();
+    }
+    public void S2PP0MediumCycle2 (Pose2d lastPose) {
+
+        Trajectory traj3 = lDrive.trajectoryBuilder(lastPose)
+                .back(5)
+                .build();
+        Trajectory traj4 = lDrive.trajectoryBuilder(traj3.end())
+                .forward(21)
+                .build();
+
+        // Lift Stuff
+        lDrive.followTrajectory(traj3);
+        lDrive.turn(Math.toRadians(-45));
+        lDrive.turn(Math.toRadians(90));
+        lDrive.followTrajectory(traj4);
+        lDrive.turn(Math.toRadians(-90));
+    }
 
     /*
     // Medium Pole Cyle w/ Preload Cone + Parking
