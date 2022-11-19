@@ -9,6 +9,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -23,6 +25,18 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 @TeleOp(name = "TeleOp State Machines", group = "16481-Power-Play")
 public class TeleopStateMachines extends LinearOpMode {
 
+    public enum STATE_CLAW {
+        STATE_CLAW_OPEN,                // claw opens
+        STATE_CLAW_CLOSED              //claw closes
+    }
+    public enum STATE_ARM {
+        STATE_ARM_LEVEL_0,               //raise arm height to medium pole
+        STATE_ARM_LEVEL_1,               //raise arm height to low pole
+        STATE_ARM_LEVEL_2,              //raise arm height to high pole
+        STATE_ARM_LEVEL_3,              //raise arm height to pick up cone
+        STATE_ARM_MANUAL,                 //manual lower arm down
+    }
+    /*
     public enum STATE_DRIVE{
         STATE_DRIVE_STOP,                    //drives stop
         STATE_DRIVE_FORWARD,                 //drives forward
@@ -31,20 +45,6 @@ public class TeleopStateMachines extends LinearOpMode {
         STATE_DRIVE_STRAFE_RIGHT,             //strafe right
         STATE_DRIVE_TURN_LEFT,                //rotate left
         STATE_DRIVE_TURN_RIGHT               //rotate right
-    }
-    public enum STATE_CLAW {
-        STATE_CLAW_OPEN,                // claw opens
-        STATE_CLAW_CLOSED              //claw closes
-    }
-    public enum STATE_ARM {
-        STATE_ARM_LOW,               //raise arm height to medium pole
-        STATE_ARM_MED,               //raise arm height to low pole
-        STATE_ARM_HIGH,              //raise arm height to high pole
-        STATE_ARM_PICK,              //raise arm height to pick up cone
-        STATE_ARM_UP,                   //manual raise arm up
-        STATE_ARM_DOWN,                 //manual lower arm down
-        STATE_ARM_EXTEND_BACK,              //manual extend arm backward
-        STATE_ARM_EXTEND_FRONT              // manual extend arm forward
     }
     public enum STATE_ROADRUNNER {
         //ToDo: Classify each preset
@@ -71,22 +71,21 @@ public class TeleopStateMachines extends LinearOpMode {
         STATE_APRIL_TAG_FOUND_1,        //Switches to this if found at position 2 on field
         STATE_APRIL_TAG_FOUND_2         //Switches to this if found at position 3 on field
     }
-
+    */
     /**
      * Setting Current state for each section to desired starting state
      */
-    public STATE_DRIVE DriveState = STATE_DRIVE.STATE_DRIVE_STOP;
+    // public STATE_DRIVE DriveState = STATE_DRIVE.STATE_DRIVE_STOP;
+    // public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
     public STATE_CLAW ClawState = STATE_CLAW.STATE_CLAW_OPEN;
-    public STATE_ARM ArmState = STATE_ARM.STATE_ARM_PICK;
-    public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
-    public STATE_APRIL_TAG AprilTagState = STATE_APRIL_TAG.STATE_APRIL_TAG_SEARCH;
+    public STATE_ARM ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
 
     /**
      * Lift Level constants
      */
     final int LIFT_LEVEL_0 = 0;
-    final int LIFT_LEVEL_1 = -800;
-    final int LIFT_LEVEL_2 = -1000;
+    final int LIFT_LEVEL_1 = -600;
+    final int LIFT_LEVEL_2 = -900;
     final int LIFT_LEVEL_3 = -1200;
 
     /**
@@ -94,8 +93,8 @@ public class TeleopStateMachines extends LinearOpMode {
      */
 
    // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    DcMotor motorLeft;
-    DcMotor motorRight;
+    DcMotorEx motorLeft;
+    DcMotorEx motorRight;
     Servo claw;
 
     @Override
@@ -107,19 +106,31 @@ public class TeleopStateMachines extends LinearOpMode {
         /** **********************************************************************
          * cone detection Code
          **********************************************************************/
-        OpenCvCamera camera;
+        /*OpenCvCamera camera;
         int cameraMonitorViewId = hardwareMap.appContext.getResources().
                 getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.
                 get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         ConeDetection myConeDetection = new ConeDetection(camera);
-
+        */
         /** **********************************************************************
          * Hardware map for Claw and Lift
          **********************************************************************/
         claw = hardwareMap.get(Servo.class, "claw");
-        motorLeft  = hardwareMap.get(DcMotor.class, "LiftLeft");
-        motorRight  = hardwareMap.get(DcMotor.class, "LiftRight");
+        motorLeft  = hardwareMap.get(DcMotorEx.class, "LiftLeft");
+        motorRight  = hardwareMap.get(DcMotorEx.class, "LiftRight");
+
+        motorLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+        motorRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
 
@@ -137,9 +148,104 @@ public class TeleopStateMachines extends LinearOpMode {
                  )
             );
             drive.update();
+
             /** **********************************************************************
              *
              **********************************************************************/
+            switch (ClawState) {
+                case STATE_CLAW_OPEN:
+                    telemetry.addLine("Claw open");
+                    claw.setPosition(0);
+                    if(gamepad2.left_bumper) {
+                        ClawState = STATE_CLAW.STATE_CLAW_CLOSED;
+                        gamepad1.rumble(500);
+                        gamepad2.rumble(500);
+                    }
+                    break;
+                case STATE_CLAW_CLOSED:
+                    telemetry.addLine("Claw close");
+                    claw.setPosition(1);
+                    if(gamepad2.right_bumper) {
+                        ClawState = STATE_CLAW.STATE_CLAW_OPEN;
+                        gamepad1.rumble(500);
+                        gamepad2.rumble(500);
+                    }
+                    break;
+            }
+            /** **********************************************************************
+             *
+             **********************************************************************/
+            switch (ArmState) {
+                case STATE_ARM_LEVEL_0:
+                    setArmPosition(LIFT_LEVEL_0);
+                    telemetry.addLine("Level 0");
+                    if(gamepad2.dpad_left)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_1;
+                    if(gamepad2.dpad_right)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_2;
+                    if(gamepad2.dpad_up)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_3;
+                    if(gamepad2.a)
+                        ArmState = STATE_ARM.STATE_ARM_MANUAL;
+                    break;
+                case STATE_ARM_LEVEL_1:
+                    telemetry.addLine("Level 1");
+                    setArmPosition(LIFT_LEVEL_1);
+                    if(gamepad2.dpad_down)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
+                    if(gamepad2.dpad_right)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_2;
+                    if(gamepad2.dpad_up)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_3;
+                    break;
+                case STATE_ARM_LEVEL_2:
+                    telemetry.addLine("Level 2");
+                    setArmPosition(LIFT_LEVEL_2);
+                    if(gamepad2.dpad_down)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
+                    if(gamepad2.dpad_left)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_1;
+                    if(gamepad2.dpad_up)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_3;
+                    if(gamepad2.a)
+                        ArmState = STATE_ARM.STATE_ARM_MANUAL;
+                    break;
+                case STATE_ARM_LEVEL_3:
+                    telemetry.addLine("Level 3");
+                    setArmPosition(LIFT_LEVEL_3);
+                    if(gamepad2.dpad_down)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
+                    if(gamepad2.dpad_left)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_1;
+                    if(gamepad2.dpad_right)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_2;
+                    if(gamepad2.a)
+                        ArmState = STATE_ARM.STATE_ARM_MANUAL;
+                    break;
+                    /*
+                case STATE_ARM_MANUAL:
+                    telemetry.addData("Right sticky y", gamepad2.right_stick_y);
+                    moveArm();
+                    if(gamepad2.dpad_down)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
+                    if(gamepad2.dpad_left)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_1;
+                    if(gamepad2.dpad_right)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_2;
+                    if(gamepad2.b)
+                        ArmState = STATE_ARM.STATE_ARM_LEVEL_3;
+                    break;
+                     */
+            }
+            /** **********************************************************************
+             *
+             **********************************************************************/
+            telemetry.update();
+
+            /** **********************************************************************
+             *
+             **********************************************************************/
+            /*
              switch(DriveState) {
                 case STATE_DRIVE_STOP:
                     //ToDo: Event to move to next state
@@ -243,149 +349,8 @@ public class TeleopStateMachines extends LinearOpMode {
                     break;
                 default:
                     break;
-            }
-            /** **********************************************************************
-             *
-             **********************************************************************/
-            switch (ClawState) {
-                case STATE_CLAW_OPEN:
-                    claw.setPosition(0);
-                    if(gamepad2.left_bumper) {
-                        ClawState = STATE_CLAW.STATE_CLAW_CLOSED;
-                        gamepad1.rumble(500);
-                        gamepad2.rumble(500);
-                    }
-                    break;
-                case STATE_CLAW_CLOSED:
-                    claw.setPosition(1);
-                    gamepad1.rumble(500);
-                    if(gamepad2.right_bumper) {
-                        ClawState = STATE_CLAW.STATE_CLAW_OPEN;
-                        gamepad1.rumble(500);
-                        gamepad2.rumble(500);
-                    }
-                    break;
-            }
-            /** **********************************************************************
-             *
-             **********************************************************************/
-            switch (ArmState) {
-                case STATE_ARM_PICK:
-                    setArmPosition(0);
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    break;
-                case STATE_ARM_LOW:
-                    setArmPosition(50);
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.b)
-                        ArmState = STATE_ARM.STATE_ARM_PICK;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    break;
-                case STATE_ARM_MED:
-                    setArmPosition(-500);
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.b)
-                        ArmState = STATE_ARM.STATE_ARM_PICK;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    break;
-                case STATE_ARM_HIGH:
-                    setArmPosition(-1000);
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.b)
-                        ArmState = STATE_ARM.STATE_ARM_PICK;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    break;
-                case STATE_ARM_UP:
-                case STATE_ARM_DOWN:
-                    setArmPosition(0);
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    break;
-                case STATE_ARM_EXTEND_BACK:
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_FRONT;
-                    break;
-                case STATE_ARM_EXTEND_FRONT:
-                    if(gamepad2.a)
-                        ArmState = STATE_ARM.STATE_ARM_LOW;
-                    if(gamepad2.x)
-                        ArmState = STATE_ARM.STATE_ARM_MED;
-                    if(gamepad2.y)
-                        ArmState = STATE_ARM.STATE_ARM_HIGH;
-                    if(gamepad2.right_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_UP;
-                    if(gamepad2.right_stick_y < 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_DOWN;
-                    if(gamepad2.left_stick_y > 0.1)
-                        ArmState = STATE_ARM.STATE_ARM_EXTEND_BACK;
-                    break;
-            }
-            /** **********************************************************************
-             *
-             **********************************************************************/
+            }*/
+            /*
             switch (RoadrunnerState){
                 case STATE_ROADRUNNER_POS0:
                     //ToDo: Event to move to next state
@@ -451,36 +416,45 @@ public class TeleopStateMachines extends LinearOpMode {
                     //ToDo: Event to move to next state
                     //ToDo: Action to be performed in this state.
                     break;
-            }
+            }*/
         }
     }
 
     public void setArmPosition(int target)
     {
+
+        if (motorLeft.isBusy() && motorRight.isBusy()) {
+            telemetry.addLine("returning from busy");
+            telemetry.update();
+            return;
+        }
+
+        telemetry.addData("Moving arm to target: ", target);
+        telemetry.update();
+
+        motorLeft.setPower(0);
+        motorRight.setPower(0);
+
+        motorRight.setTargetPosition(target);
+        motorLeft.setTargetPosition(target);
+
+        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        motorLeft.setPower(.5);
+        motorRight.setPower(.5);
+    }
+
+    public void moveArm()
+    {
         if (motorLeft.isBusy() || motorRight.isBusy())
             return;
-        if ((ArmState== STATE_ARM.STATE_ARM_DOWN) || (ArmState == STATE_ARM.STATE_ARM_UP)) {
-            motorLeft.setPower(gamepad2.right_stick_y);
-            motorRight.setPower(gamepad2.right_stick_y);
-        }  else  {
-            motorLeft.setPower(0);
-            motorRight.setPower(0);
 
-            motorRight.setTargetPosition(target);
-            motorLeft.setTargetPosition(target);
+        telemetry.addLine("Moving arm in manual mode");
+        motorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            motorLeft.setPower(.5);
-            motorRight.setPower(.5);
-        }
+        motorLeft.setPower(gamepad2.right_stick_y);
+        motorRight.setPower(gamepad2.right_stick_y);
     }
-    /*
-    public void ServoControl(Servo servoControl, double direction) {
-        if(timer_1.milliseconds() >= 100) {
-            servoControl.setPosition(servoControl.getPosition()+direction);
-            timer_1.reset();
-        }
-    }*/
 }
