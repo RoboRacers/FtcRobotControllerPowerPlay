@@ -115,20 +115,13 @@ public class AutoopStateMachines extends LinearOpMode {
         telemetry.addData("# Detecting AprilTag ","");
         telemetry.update();
 
-        boolean Done = false;
-        while(!Done && !isStopRequested()) {
+        // We are settting the robot position to Position 2, just because all of them are the same
+        RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
+        while(!isStopRequested() && !opModeIsActive) {
+            // Repeatedly update the signal ID with new detections from init to opmode start
             tagID = mySignalDetection.CheckSignal();
             telemetry.addData("# Tag ID: ", tagID);
             telemetry.addData("Position selected ", RobotPosition);
-            if(gamepad1.x) RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
-            else if(gamepad1.y) RobotPosition = STATE_POSITION.STATE_POSITION_SP1;
-            else if(gamepad1.a) RobotPosition = STATE_POSITION.STATE_POSITION_SP3;
-            else if(gamepad1.b) RobotPosition = STATE_POSITION.STATE_POSITION_SP0;
-            else if(gamepad1.right_bumper)
-            {
-                telemetry.addData("Position Confirmed ", RobotPosition);
-                Done = true;
-            }
             telemetry.update();
         }
 
