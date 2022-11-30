@@ -117,7 +117,7 @@ public class AutoopStateMachines extends LinearOpMode {
 
         // We are settting the robot position to Position 2, just because all of them are the same
         RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
-        while(!isStopRequested() && !opModeIsActive) {
+        while(!isStopRequested() && !opModeIsActive()) {
             // Repeatedly update the signal ID with new detections from init to opmode start
             tagID = mySignalDetection.CheckSignal();
             telemetry.addData("# Tag ID: ", tagID);
