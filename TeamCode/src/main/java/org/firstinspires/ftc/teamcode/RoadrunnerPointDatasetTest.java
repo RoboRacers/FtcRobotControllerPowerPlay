@@ -14,10 +14,11 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
-
+  /*
 @Config
 @Autonomous(name = "Roadrunner test", group = "Test")
 public class RoadrunnerPointDatasetTest extends LinearOpMode {
+
     public enum STATE_POSITION {
         STATE_POSITION_SP9,
         STATE_POSITION_SP0,
@@ -91,5 +92,8 @@ public class RoadrunnerPointDatasetTest extends LinearOpMode {
             servoControl.setPosition(servoControl.getPosition()+direction);
             timer_1.reset();
         }
-    }*/
+    }
+
+
 }
+  */
