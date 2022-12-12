@@ -1,23 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.content.Context;
-import android.util.Log;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.teamcode.RoadrunnerPointDataset;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -26,8 +17,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
 @Config
-@Autonomous(name = "AutoOp State Machines", group = "16481-Power-Play")
-public class AutoopStateMachines extends LinearOpMode {
+@Autonomous(name = "AutoOp State Machines (LEFT)", group = "16481-Power-Play")
+public class AutoopStateMachinesLeft extends LinearOpMode {
 
     // Declare the motors and servos
     DcMotorEx motorLeft;
@@ -177,14 +168,14 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         // Run High Preload
-                        Trajectories.HighPreloadRight();
+                        Trajectories.HighPreloadLeft();
                         // Then run Parking
                         if (tagID == 0) {
-                            Trajectories.PreloadParkingRightPP1();
+                            Trajectories.PreloadParkingLeftPP1();
                         } else if (tagID == 1) {
-                            Trajectories.PreloadParkingRightPP2();
+                            Trajectories.PreloadParkingLeftPP2();
                         } else if (tagID == 2) {
-                            Trajectories.PreloadParkingRightPP3();
+                            Trajectories.PreloadParkingLeftPP3();
                         }
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                         break;

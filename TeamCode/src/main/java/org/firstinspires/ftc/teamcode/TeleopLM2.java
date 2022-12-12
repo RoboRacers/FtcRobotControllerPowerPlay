@@ -53,9 +53,13 @@ public class TeleopLM2 extends LinearOpMode {
         while (!isStopRequested()) {
             drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.7)); drive.update();
             if(gamepad2.right_bumper) {
-                claw(closed);
+                claw.setPosition(closed);
+                gamepad1.rumble(500);
+                gamepad2.rumble(500);
             } else if(gamepad2.left_bumper){
-                claw(open);
+                claw.setPosition(open);
+                gamepad1.rumble(500);
+                gamepad2.rumble(500);
             } else if(gamepad2.dpad_up) {
                 ArmPosition(liftHigh);
             } else if(gamepad2.dpad_down) {
