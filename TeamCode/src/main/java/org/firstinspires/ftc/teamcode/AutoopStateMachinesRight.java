@@ -42,7 +42,7 @@ public class AutoopStateMachinesRight extends LinearOpMode {
     final int liftLow = 0;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
-    final int liftHigh = -1200;
+    final int liftHigh = -1275;
 
 
     @Override
@@ -94,8 +94,9 @@ public class AutoopStateMachinesRight extends LinearOpMode {
             telemetry.addData("# Tag ID: ", tagID);
             telemetry.addData("Position selected ", RobotPosition);
             telemetry.update();
-        }
 
+        }
+        claw.close();
         camera.closeCameraDevice();
 
         // Import Roadrunner Trajectories

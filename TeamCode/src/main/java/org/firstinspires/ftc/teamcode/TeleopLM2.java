@@ -17,7 +17,7 @@ public class TeleopLM2 extends LinearOpMode {
     final int liftLow = 0;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
-    final int liftHigh = -1200;
+    final int liftHigh = -1275;
 
     int lower;
     int pos;
@@ -51,7 +51,7 @@ public class TeleopLM2 extends LinearOpMode {
             claw(open);
         }
         while (!isStopRequested()) {
-            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.7)); drive.update();
+            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75)); drive.update();
             if(gamepad2.right_bumper) {
                 claw.setPosition(closed);
                 gamepad1.rumble(500);
@@ -87,7 +87,7 @@ public class TeleopLM2 extends LinearOpMode {
     }
     public void ArmManualRetract() {
         pos = motorLeft.getCurrentPosition();
-        lower = pos + 50;
+        lower = pos + 100;
         motorLeft.setPower(0);
         motorRight.setPower(0);
         motorRight.setTargetPosition(lower);
@@ -99,7 +99,7 @@ public class TeleopLM2 extends LinearOpMode {
     }
     public void ArmManualExtend() {
         pos = motorLeft.getCurrentPosition();
-        higher = pos - 50;
+        higher = pos - 100;
         motorLeft.setPower(0);
         motorRight.setPower(0);
         motorRight.setTargetPosition(higher);

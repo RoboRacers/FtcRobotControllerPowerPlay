@@ -54,7 +54,7 @@ public class RoadrunnerPointDataset {
     final int stack1 = -275;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
-    final int liftHigh = -1200;
+    final int liftHigh = -1250;
 
     DcMotorEx lmotorLeft;
     DcMotorEx lmotorRight;
@@ -327,7 +327,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
         traj3 = lDrive.trajectorySequenceBuilder(traj2.end())
-                .lineTo(new Vector2d(-24, 8))
+                .lineTo(new Vector2d(-24, 9))
                 .waitSeconds(5)
                 .addTemporalMarker(7, () -> {
                     claw(open);
@@ -366,7 +366,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
         traj3 = lDrive.trajectorySequenceBuilder(traj2.end())
-                .lineTo(new Vector2d(24, 6))
+                .lineTo(new Vector2d(24, 7))
                 .waitSeconds(5)
                 .addTemporalMarker(7, () -> {
                     claw(open);

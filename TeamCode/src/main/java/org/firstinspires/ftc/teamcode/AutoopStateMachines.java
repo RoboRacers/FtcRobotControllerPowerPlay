@@ -114,7 +114,7 @@ public class AutoopStateMachines extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        Boolean cycle = true;
+        Boolean cycle = false;
         while(opModeIsActive()){
             /* Running Trajectories */
             // Just Parking

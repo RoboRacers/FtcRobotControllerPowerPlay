@@ -42,7 +42,7 @@ public class AutoopStateMachinesLeft extends LinearOpMode {
     final int liftLow = 0;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
-    final int liftHigh = -1200;
+    final int liftHigh = -1275;
 
 
     @Override
