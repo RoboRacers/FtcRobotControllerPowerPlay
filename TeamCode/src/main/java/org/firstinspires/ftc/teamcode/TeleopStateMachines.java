@@ -11,9 +11,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.modules.opencv.ConeDetection;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
@@ -29,6 +31,17 @@ public class TeleopStateMachines extends LinearOpMode {
         STATE_CLAW_OPEN,                // claw opens
         STATE_CLAW_CLOSED              //claw closes
     }
+
+    //cone detect < 150MM
+    public enum STATE_CLAW_RANGE {
+        STATE_CONE_DETECT,
+        STATE_CONE_NOT_DETECTED
+    }
+    /*ToDo : Range sensor for arm height detection
+    In auto, when picking up starter stack, move arm down until cone detection happens,
+    then pick up cone, cycle, and move arm back down to the same position. Repeat process to cycle all the cones
+    */
+
     public enum STATE_ARM {
         STATE_ARM_LEVEL_0,               //raise arm height to medium pole
         STATE_ARM_LEVEL_1,               //raise arm height to low pole
@@ -65,21 +78,7 @@ public class TeleopStateMachines extends LinearOpMode {
         STATE_ROADRUNNER_POS14,
         STATE_ROADRUNNER_POS15
     }
-    public enum STATE_APRIL_TAG {
-        STATE_APRIL_TAG_SEARCH,         //Searches for tag in each position on field
-        STATE_APRIL_TAG_FOUND_0,        //Switches to this if tag is found at position 1 on field
-        STATE_APRIL_TAG_FOUND_1,        //Switches to this if found at position 2 on field
-        STATE_APRIL_TAG_FOUND_2         //Switches to this if found at position 3 on field
-    }
     */
-    /**
-     * Setting Current state for each section to desired starting state
-     */
-    // public STATE_DRIVE DriveState = STATE_DRIVE.STATE_DRIVE_STOP;
-    // public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
-    public STATE_CLAW ClawState = STATE_CLAW.STATE_CLAW_OPEN;
-    public STATE_ARM ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
-
     /**
      * Lift Level constants
      */
@@ -88,20 +87,40 @@ public class TeleopStateMachines extends LinearOpMode {
     final int LIFT_LEVEL_2 = -900;
     final int LIFT_LEVEL_3 = -1200;
 
+    final double CLAW_OPEN = 0;
+    final double CLAW_CLOSE = 0.7;
+
+    /**
+     * Setting Current state for each section to desired starting state
+     * these states come from end of autocode. Check with autocode where it ends
+     */
+    // public STATE_DRIVE DriveState = STATE_DRIVE.STATE_DRIVE_STOP;
+    // public STATE_ROADRUNNER RoadrunnerState = STATE_ROADRUNNER.STATE_ROADRUNNER_POS0;
+    public STATE_CLAW ClawState = STATE_CLAW.STATE_CLAW_OPEN;
+    public STATE_ARM ArmState = STATE_ARM.STATE_ARM_LEVEL_0;
+    public STATE_CLAW_RANGE ClawRangeState = STATE_CLAW_RANGE.STATE_CONE_NOT_DETECTED;
+
+
     /**
      * Timer to increment servo. Servo increment to next position when timer reach a set value
      */
-
    // ElapsedTime timer_1 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    DcMotorEx motorLeft;
-    DcMotorEx motorRight;
-    Servo claw;
+
+    private DcMotorEx LiftMotorLeft;
+    private DcMotorEx LiftMotorRight;
+    private Servo clawServo;
+    private DistanceSensor clawRange;
+
 
     @Override
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        /** **********************************************************************
+         * Roadrunner Initialisation
+         **********************************************************************/
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         /** **********************************************************************
          * cone detection Code
@@ -114,23 +133,28 @@ public class TeleopStateMachines extends LinearOpMode {
         ConeDetection myConeDetection = new ConeDetection(camera);
         */
         /** **********************************************************************
-         * Hardware map for Claw and Lift
+         * Claw Initialisation
          **********************************************************************/
-        claw = hardwareMap.get(Servo.class, "claw");
-        motorLeft  = hardwareMap.get(DcMotorEx.class, "LiftLeft");
-        motorRight  = hardwareMap.get(DcMotorEx.class, "LiftRight");
+        clawServo = hardwareMap.get(Servo.class, "claw");
+        clawRange = hardwareMap.get(DistanceSensor.class, "clawRange");
 
-        motorLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        /** **********************************************************************
+         * Lift Initialisation
+         **********************************************************************/
+        LiftMotorLeft  = hardwareMap.get(DcMotorEx.class, "LiftLeft");
+        LiftMotorRight  = hardwareMap.get(DcMotorEx.class, "LiftRight");
 
-        motorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LiftMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        LiftMotorRight.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LiftMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LiftMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LiftMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LiftMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        LiftMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LiftMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
 
@@ -142,20 +166,36 @@ public class TeleopStateMachines extends LinearOpMode {
              **********************************************************************/
             drive.setWeightedDrivePower(
                  new Pose2d(
-                     -gamepad1.left_stick_y*.75,
-                     -gamepad1.left_stick_x*.75, //imperfect strafing fix, must be tuned for new drivetrain
+                     -gamepad1.left_stick_y*.80,
+                     -gamepad1.left_stick_x*.80, //imperfect strafing fix, must be tuned for new drivetrain
                      -gamepad1.right_stick_x*.75
                  )
             );
             drive.update();
 
             /** **********************************************************************
-             *
+             * claw range cade
+             **********************************************************************/
+            switch (ClawRangeState) {
+                case STATE_CONE_DETECT:
+                    telemetry.addLine("cone detected");
+                    ClawState = STATE_CLAW.STATE_CLAW_CLOSED;
+                    break;
+                case STATE_CONE_NOT_DETECTED:
+                    telemetry.addLine("Cone not detected");
+                    telemetry.addData("Distance:", clawRange.getDistance(DistanceUnit.MM));
+                    if(clawRange.getDistance(DistanceUnit.MM) < 150) {
+                        ClawRangeState = STATE_CLAW_RANGE.STATE_CONE_DETECT;
+                    }
+                    break;
+            }
+            /** **********************************************************************
+             *  claw code
              **********************************************************************/
             switch (ClawState) {
                 case STATE_CLAW_OPEN:
                     telemetry.addLine("Claw open");
-                    claw.setPosition(0);
+                    clawServo.setPosition(CLAW_OPEN);
                     if(gamepad2.left_bumper) {
                         ClawState = STATE_CLAW.STATE_CLAW_CLOSED;
                         gamepad1.rumble(500);
@@ -164,16 +204,17 @@ public class TeleopStateMachines extends LinearOpMode {
                     break;
                 case STATE_CLAW_CLOSED:
                     telemetry.addLine("Claw close");
-                    claw.setPosition(1);
+                    clawServo.setPosition(CLAW_CLOSE);
                     if(gamepad2.right_bumper) {
                         ClawState = STATE_CLAW.STATE_CLAW_OPEN;
+                        ClawRangeState = STATE_CLAW_RANGE.STATE_CONE_NOT_DETECTED;
                         gamepad1.rumble(500);
                         gamepad2.rumble(500);
                     }
                     break;
             }
             /** **********************************************************************
-             *
+             * lift code
              **********************************************************************/
             switch (ArmState) {
                 case STATE_ARM_LEVEL_0:
@@ -237,193 +278,13 @@ public class TeleopStateMachines extends LinearOpMode {
                     break;
                      */
             }
-            /** **********************************************************************
-             *
-             **********************************************************************/
             telemetry.update();
-
-            /** **********************************************************************
-             *
-             **********************************************************************/
-            /*
-             switch(DriveState) {
-                case STATE_DRIVE_STOP:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_FORWARD;
-                    if(gamepad1.left_stick_y < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_BACKWARD;
-                    if(gamepad1.left_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_RIGHT;
-                    if(gamepad1.left_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_LEFT;
-                    if(gamepad1.right_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_RIGHT;
-                    if(gamepad1.right_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_LEFT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_DRIVE_FORWARD:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_BACKWARD;
-                    if(gamepad1.left_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_RIGHT;
-                    if(gamepad1.left_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_LEFT;
-                    if(gamepad1.right_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_RIGHT;
-                    if(gamepad1.right_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_LEFT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_DRIVE_BACKWARD:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_FORWARD;
-                    if(gamepad1.left_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_RIGHT;
-                    if(gamepad1.left_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_LEFT;
-                    if(gamepad1.right_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_RIGHT;
-                    if(gamepad1.right_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_LEFT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_DRIVE_STRAFE_RIGHT:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_FORWARD;
-                    if(gamepad1.left_stick_y < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_BACKWARD;
-                    if(gamepad1.left_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_LEFT;
-                    if(gamepad1.right_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_RIGHT;
-                    if(gamepad1.right_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_LEFT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_DRIVE_STRAFE_LEFT:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_FORWARD;
-                    if(gamepad1.left_stick_y < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_BACKWARD;
-                    if(gamepad1.left_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_RIGHT;
-                    if(gamepad1.right_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_RIGHT;
-                    if(gamepad1.right_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_LEFT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_DRIVE_TURN_RIGHT:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_FORWARD;
-                    if(gamepad1.left_stick_y < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_BACKWARD;
-                    if(gamepad1.left_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_RIGHT;
-                    if(gamepad1.left_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_LEFT;
-                    if(gamepad1.right_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_LEFT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_DRIVE_TURN_LEFT:
-                    //ToDo: Event to move to next state
-                    if(gamepad1.left_stick_y > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_FORWARD;
-                    if(gamepad1.left_stick_y < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_BACKWARD;
-                    if(gamepad1.left_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_RIGHT;
-                    if(gamepad1.left_stick_x < 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_STRAFE_LEFT;
-                    if(gamepad1.right_stick_x > 0.1)
-                        DriveState = STATE_DRIVE.STATE_DRIVE_TURN_RIGHT;
-                    //ToDo: Action to be performed in this state.
-                    break;
-                default:
-                    break;
-            }*/
-            /*
-            switch (RoadrunnerState){
-                case STATE_ROADRUNNER_POS0:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS1:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS2:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS3:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS4:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS5:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS6:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS7:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS8:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS9:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS10:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS11:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS12:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS13:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS14:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-                case STATE_ROADRUNNER_POS15:
-                    //ToDo: Event to move to next state
-                    //ToDo: Action to be performed in this state.
-                    break;
-            }*/
         }
     }
 
     public void setArmPosition(int target)
     {
-
-        if (motorLeft.isBusy() && motorRight.isBusy()) {
+        if (LiftMotorLeft.isBusy() && LiftMotorRight.isBusy()) {
             telemetry.addLine("returning from busy");
             telemetry.update();
             return;
@@ -432,29 +293,29 @@ public class TeleopStateMachines extends LinearOpMode {
         telemetry.addData("Moving arm to target: ", target);
         telemetry.update();
 
-        motorLeft.setPower(0);
-        motorRight.setPower(0);
+        LiftMotorLeft.setPower(0);
+        LiftMotorRight.setPower(0);
 
-        motorRight.setTargetPosition(target);
-        motorLeft.setTargetPosition(target);
+        LiftMotorRight.setTargetPosition(target);
+        LiftMotorLeft.setTargetPosition(target);
 
-        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        LiftMotorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        LiftMotorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        motorLeft.setPower(.5);
-        motorRight.setPower(.5);
+        LiftMotorLeft.setPower(.5);
+        LiftMotorRight.setPower(.5);
     }
 
     public void moveArm()
     {
-        if (motorLeft.isBusy() || motorRight.isBusy())
+        if (LiftMotorLeft.isBusy() || LiftMotorRight.isBusy())
             return;
 
         telemetry.addLine("Moving arm in manual mode");
-        motorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LiftMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LiftMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        motorLeft.setPower(gamepad2.right_stick_y);
-        motorRight.setPower(gamepad2.right_stick_y);
+        LiftMotorLeft.setPower(gamepad2.right_stick_y);
+        LiftMotorRight.setPower(gamepad2.right_stick_y);
     }
 }
