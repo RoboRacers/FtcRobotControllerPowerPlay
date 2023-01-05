@@ -25,6 +25,8 @@ import org.firstinspires.ftc.teamcode.modules.opencv.SignalDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
+// Localization is doesn't show drift, follower if it does
+
 @Config
 @Autonomous(name = "AutoOp State Machines", group = "16481-Power-Play")
 public class AutoopStateMachines extends LinearOpMode {
@@ -115,10 +117,11 @@ public class AutoopStateMachines extends LinearOpMode {
         if (isStopRequested()) return;
 
         Boolean cycle = false;
+        Boolean test = true;
         while(opModeIsActive()){
             /* Running Trajectories */
             // Just Parking
-            if(cycle == false){
+            if(cycle == false && test == false){
                 switch (RobotPosition) {
                     case STATE_POSITION_SP0:
                         drive.setPoseEstimate(Trajectories.S0_POS);
@@ -151,7 +154,7 @@ public class AutoopStateMachines extends LinearOpMode {
                 }
             }
             // Cycle
-            else if(cycle == true) {
+            else if(cycle == true && test == false) {
                 switch (RobotPosition) {
                     case STATE_POSITION_SP0:
                         drive.setPoseEstimate(Trajectories.S0_POS);
@@ -201,15 +204,38 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                 }
             }
+            if(cycle == false && test == true){
+                switch (RobotPosition) {
+                    case STATE_POSITION_SP0:
+                        drive.setPoseEstimate(Trajectories.S0_POS);
+                        if(tagID == 0){ Trajectories.S0PP1(); }
+                        else if (tagID == 1) { Trajectories.S0PP2(); }
+                        else if (tagID == 2){  Trajectories.S0PP3(); }
+                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                        break;
+                    case  STATE_POSITION_SP1:
+                        drive.setPoseEstimate(Trajectories.S1_POS);
+                        if(tagID == 0){ Trajectories.S1PP1(); }
+                        else if (tagID == 1) { Trajectories.S1PP2(); }
+                        else if (tagID == 2) { Trajectories.S1PP3(); }
+                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                        break;
+                    case STATE_POSITION_SP2:
+                        drive.setPoseEstimate(Trajectories.S2_POS);
+                        if (tagID == 0) { Trajectories.AlignmentTest(); }
+                        else if (tagID == 1) { Trajectories.S2PP2(); }
+                        else if (tagID == 2) { Trajectories.S2PP3(); }
+                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                        break;
+                    case STATE_POSITION_SP3:
+                        drive.setPoseEstimate(Trajectories.S3_POS);
+                        if(tagID == 0){ Trajectories.S3PP1(); }
+                        else if (tagID == 1) { Trajectories.S3PP2(); }
+                        else if (tagID == 2) { Trajectories.S3PP3(); }
+                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                        break;
+                }
+            }
         }
     }
-
-    /*
-    public void ServoControl(Servo servoControl, double direction) {
-        if(timer_1.milliseconds() >= 100) {
-            servoControl.setPosition(servoControl.getPosition()+direction);
-            timer_1.reset();
-        }
-    }*/
-
 }
