@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 @TeleOp
@@ -19,12 +21,10 @@ public class TeleopLM2 extends LinearOpMode {
     final int liftMid = -900;
     final int liftHigh = -1275;
 
-    int lower;
-    int pos;
-    int higher;
     Servo claw;
     final double closed = 0.7;
     final double open =0;
+    private DistanceSensor clawRange;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -33,10 +33,14 @@ public class TeleopLM2 extends LinearOpMode {
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         claw = hardwareMap.get(Servo.class, "claw");
 
+        clawRange = hardwareMap.get(DistanceSensor.class, "clawRange");
+        claw = hardwareMap.get(Servo.class, "claw");
+
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
-        motorLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        motorRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        motorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorRight.setDirection(DcMotorSimple.Direction.FORWARD);
 
         motorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -50,8 +54,16 @@ public class TeleopLM2 extends LinearOpMode {
         while (opModeInInit()) {
             claw(open);
         }
+
+
         while (!isStopRequested()) {
-            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75)); drive.update();
+
+            if(clawRange.getDistance(DistanceUnit.MM) < 150) {
+                claw.setPosition(closed);
+            }
+
+            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75));
+            drive.update();
             if(gamepad2.right_bumper) {
                 claw.setPosition(closed);
                 gamepad1.rumble(500);
@@ -69,9 +81,9 @@ public class TeleopLM2 extends LinearOpMode {
             }else if(gamepad2.dpad_right) {
                 ArmPosition(liftHigherThanLow);
             }else if(gamepad2.b) {
-                ArmManualRetract();
+                ArmPosition(motorLeft.getCurrentPosition() + 10);
             }else if(gamepad2.a) {
-                ArmManualExtend();
+                ArmPosition(motorLeft.getCurrentPosition() - 10);
             }
         }
     }
@@ -82,33 +94,10 @@ public class TeleopLM2 extends LinearOpMode {
         motorLeft.setTargetPosition(pos);
         motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorLeft.setPower(1);
-        motorRight.setPower(1);
+        motorLeft.setPower(.5);
+        motorRight.setPower(.5);
     }
-    public void ArmManualRetract() {
-        pos = motorLeft.getCurrentPosition();
-        lower = pos + 100;
-        motorLeft.setPower(0);
-        motorRight.setPower(0);
-        motorRight.setTargetPosition(lower);
-        motorLeft.setTargetPosition(lower);
-        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorLeft.setPower(1);
-        motorRight.setPower(1);
-    }
-    public void ArmManualExtend() {
-        pos = motorLeft.getCurrentPosition();
-        higher = pos - 100;
-        motorLeft.setPower(0);
-        motorRight.setPower(0);
-        motorRight.setTargetPosition(higher);
-        motorLeft.setTargetPosition(higher);
-        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorLeft.setPower(1);
-        motorRight.setPower(1);
-    }
+
     public void claw(double posclaw) {
         claw.setPosition(posclaw);
         gamepad1.rumble(500);
