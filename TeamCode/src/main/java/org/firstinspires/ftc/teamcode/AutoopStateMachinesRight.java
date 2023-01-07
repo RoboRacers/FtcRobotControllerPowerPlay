@@ -169,7 +169,7 @@ public class AutoopStateMachinesRight extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         // Run High Preload
-                        Trajectories.HighPreloadRight();
+                        Trajectories.HighPreloadRightV2();
                         // Then run Parking
                         if (tagID == 0) {
                             Trajectories.PreloadParkingRightPP1();

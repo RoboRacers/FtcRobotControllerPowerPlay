@@ -117,7 +117,7 @@ public class AutoopStateMachines extends LinearOpMode {
         if (isStopRequested()) return;
 
         Boolean cycle = false;
-        Boolean test = true;
+        Boolean test = false;
         while(opModeIsActive()){
             /* Running Trajectories */
             // Just Parking
@@ -221,10 +221,10 @@ public class AutoopStateMachines extends LinearOpMode {
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                         break;
                     case STATE_POSITION_SP2:
-                        drive.setPoseEstimate(Trajectories.S2_POS);
-                        if (tagID == 0) { Trajectories.AlignmentTest(); }
-                        else if (tagID == 1) { Trajectories.S2PP2(); }
-                        else if (tagID == 2) { Trajectories.S2PP3(); }
+                        drive.setPoseEstimate(new Pose2d(-34, 64.5, Math.toRadians(270)));
+                        if (tagID == 0) { Trajectories.HighPreloadRightV1(); }
+                        else if (tagID == 1) { Trajectories.HighPreloadRightV2(); }
+                        else if (tagID == 2) { Trajectories.HighCycleRightV1(); }
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                         break;
                     case STATE_POSITION_SP3:

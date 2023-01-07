@@ -19,21 +19,18 @@ public class TeleopLM2 extends LinearOpMode {
     final int liftLow = 0;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
-    final int liftHigh = -1275;
+    final int liftHigh = -1325;
 
     Servo claw;
     final double closed = 0.7;
     final double open =0;
-    private DistanceSensor clawRange;
 
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        claw = hardwareMap.get(Servo.class, "claw");
 
-        clawRange = hardwareMap.get(DistanceSensor.class, "clawRange");
         claw = hardwareMap.get(Servo.class, "claw");
 
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
@@ -58,9 +55,6 @@ public class TeleopLM2 extends LinearOpMode {
 
         while (!isStopRequested()) {
 
-            if(clawRange.getDistance(DistanceUnit.MM) < 150) {
-                claw.setPosition(closed);
-            }
 
             drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75));
             drive.update();
@@ -94,8 +88,8 @@ public class TeleopLM2 extends LinearOpMode {
         motorLeft.setTargetPosition(pos);
         motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorLeft.setPower(.5);
-        motorRight.setPower(.5);
+        motorLeft.setPower(.75);
+        motorRight.setPower(.75);
     }
 
     public void claw(double posclaw) {
