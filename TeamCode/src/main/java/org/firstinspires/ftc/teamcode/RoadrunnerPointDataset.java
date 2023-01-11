@@ -409,7 +409,7 @@ public class RoadrunnerPointDataset {
                     claw(close);
                 })
                 .addSpatialMarker(new Vector2d(-36, 20),() -> {
-                    ArmPosition(stack1+100, 1);
+                    ArmPosition(stack1+50, 1);
                 })
                 .build();
         traj2 = lDrive.trajectoryBuilder(traj1.end())
@@ -419,7 +419,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
         traj3 = lDrive.trajectorySequenceBuilder(traj2.end())
-                .lineTo(new Vector2d(-26, 9))
+                .lineTo(new Vector2d(-26, 6))
                 .waitSeconds(2)
                 .addTemporalMarker(3, () -> {
                     ArmPosition(liftHigh+350, 1);
@@ -601,7 +601,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
         traj3 = lDrive.trajectorySequenceBuilder(traj2.end())
-                .lineTo(new Vector2d(19, 9))
+                .lineTo(new Vector2d(19, 6))
                 .waitSeconds(2)
                 .addTemporalMarker(3, () -> {
                     ArmPosition(liftHigh+350, 1);

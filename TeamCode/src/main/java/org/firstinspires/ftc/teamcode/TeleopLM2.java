@@ -17,9 +17,9 @@ public class TeleopLM2 extends LinearOpMode {
     DcMotorEx motorLeft;
     DcMotorEx motorRight;
     final int liftLow = 0;
-    final int liftHigherThanLow = -600;
-    final int liftMid = -900;
-    final int liftHigh = -1325;
+    final int liftHigherThanLow = -700;
+    final int liftMid = -1000;
+    final int liftHigh = -1300;
 
     Servo claw;
     final double closed = 0.7;
