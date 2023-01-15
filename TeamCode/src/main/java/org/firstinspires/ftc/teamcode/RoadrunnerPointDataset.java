@@ -54,7 +54,7 @@ public class RoadrunnerPointDataset {
     final int stack1 = -225;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
-    final int liftHigh = -1250;
+    final int liftHigh = -1275;
 
     DcMotorEx lmotorLeft;
     DcMotorEx lmotorRight;

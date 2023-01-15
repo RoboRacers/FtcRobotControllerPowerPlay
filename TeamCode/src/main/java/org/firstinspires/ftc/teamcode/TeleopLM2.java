@@ -19,9 +19,11 @@ public class TeleopLM2 extends LinearOpMode {
     final int liftLow = 0;
     final int liftHigherThanLow = -700;
     final int liftMid = -1000;
-    final int liftHigh = -1300;
+    final int liftHigh = -1350;
 
     Servo claw;
+    DistanceSensor armRangeSensor;
+
     final double closed = 0.7;
     final double open =0;
 
@@ -35,6 +37,8 @@ public class TeleopLM2 extends LinearOpMode {
 
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
+
+        armRangeSensor = hardwareMap.get(DistanceSensor.class, "armRange");
 
         motorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRight.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -79,6 +83,7 @@ public class TeleopLM2 extends LinearOpMode {
             }else if(gamepad2.a) {
                 ArmPosition(motorLeft.getCurrentPosition() - 10);
             }
+
         }
     }
     public void ArmPosition(int pos) {
