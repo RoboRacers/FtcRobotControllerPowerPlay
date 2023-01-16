@@ -106,7 +106,7 @@ public class RangeTest extends LinearOpMode {
                 motorLeft.setPower(0);
                 motorRight.setPower(0);
             }
-            // generic DistanceSensor methods.
+            // generic DistanceSensor methods.d
             telemetry.addData("deviceName",sensorRange.getDeviceName() );
             telemetry.addData("range", String.format("%.01f mm", sensorRange.getDistance(DistanceUnit.MM)));
             telemetry.addData("range", String.format("%.01f cm", sensorRange.getDistance(DistanceUnit.CM)));
