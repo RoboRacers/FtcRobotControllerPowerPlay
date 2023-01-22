@@ -108,17 +108,19 @@ public class RangeTest extends LinearOpMode {
             }
             // generic DistanceSensor methods.d
             telemetry.addData("deviceName",sensorRange.getDeviceName() );
-            telemetry.addData("range", String.format("%.01f mm", sensorRange.getDistance(DistanceUnit.MM)));
+            //telemetry.addData("range", String.format("%.01f mm", sensorRange.getDistance(DistanceUnit.MM)));
             telemetry.addData("range", String.format("%.01f cm", sensorRange.getDistance(DistanceUnit.CM)));
-            telemetry.addData("range", String.format("%.01f m", sensorRange.getDistance(DistanceUnit.METER)));
+            //telemetry.addData("range", String.format("%.01f m", sensorRange.getDistance(DistanceUnit.METER)));
             telemetry.addData("range", String.format("%.01f in", sensorRange.getDistance(DistanceUnit.INCH)));
-            telemetry.addData("Gamepad 2 Left Stick X", gamepad2.left_stick_y);
-            telemetry.addData("Left Motor", motorLeft.getPower());
-            telemetry.addData("Right Motor", motorRight.getPower());
+            telemetry.addData("Gamepad 2 Left Stick Y", gamepad2.left_stick_y);
+            telemetry.addData("Left Motor Power: ", motorLeft.getPower());
+            telemetry.addData("Right Motor Power: ", motorRight.getPower());
+            telemetry.addData("Left Motor Encoder Value: ", motorLeft.getCurrentPosition());
+            telemetry.addData("Right Motor Encoder Value: ", motorRight.getCurrentPosition());
 
             // Rev2mDistanceSensor specific methods.
-            telemetry.addData("ID", String.format("%x", sensorTimeOfFlight.getModelID()));
-            telemetry.addData("did time out", Boolean.toString(sensorTimeOfFlight.didTimeoutOccur()));
+            //telemetry.addData("ID", String.format("%x", sensorTimeOfFlight.getModelID()));
+            //telemetry.addData("did time out", Boolean.toString(sensorTimeOfFlight.didTimeoutOccur()));
 
             telemetry.update();
         }

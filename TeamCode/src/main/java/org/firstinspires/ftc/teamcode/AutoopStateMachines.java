@@ -180,7 +180,7 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         // Run High Preload
-                        Trajectories.HighPreloadRight();
+                        //Trajectories.HighPreloadRight();
                         // Then run Parking
                         if (tagID == 0) {
                             Trajectories.PreloadParkingRightPP1();
@@ -222,7 +222,7 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         drive.setPoseEstimate(new Pose2d(-34, 64.5, Math.toRadians(270)));
-                        if (tagID == 0) { Trajectories.HighPreloadRightV1(); }
+                        if (tagID == 0) { Trajectories.HighPreloadRightV2(); }
                         else if (tagID == 1) { Trajectories.HighPreloadRightV2(); }
                         else if (tagID == 2) { Trajectories.HighCycleRightV1(); }
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;

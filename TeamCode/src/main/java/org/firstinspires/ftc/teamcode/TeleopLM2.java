@@ -19,13 +19,13 @@ public class TeleopLM2 extends LinearOpMode {
     final int liftLow = 0;
     final int liftHigherThanLow = -700;
     final int liftMid = -1000;
-    final int liftHigh = -1350;
+    final int liftHigh = -1275;
 
     Servo claw;
     DistanceSensor armRangeSensor;
 
-    final double closed = 0.7;
-    final double open =0;
+    final double closed = 0.45;
+    final double open = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
