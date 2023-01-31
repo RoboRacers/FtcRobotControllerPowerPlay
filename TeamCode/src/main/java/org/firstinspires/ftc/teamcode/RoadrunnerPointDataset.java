@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -30,7 +31,7 @@ public class RoadrunnerPointDataset {
     public final Pose2d S3_POS = new Pose2d(-36, -64.5, Math.toRadians(-270));
 
     final int liftLow = 0;
-    int stack1 = -340;
+    int stack1 = -285;
     final int liftHigherThanLow = -600;
     final int liftMid = -900;
     final int liftHigh = -1275;
@@ -254,15 +255,16 @@ public class RoadrunnerPointDataset {
     TrajectorySequence trajSeq6;
     TrajectorySequence traj7;
     Trajectory traj8;
+    TrajectorySequence traj10;
 
-    int preloadXmodifier = -2;
-    int preloadYmodifier = 0;
+    double preloadXmodifier = -1.5;
+    int preloadYmodifier = 1;
 
-    int stackXmodifier = -1;
-    int stackYmodifier = 1;
+    int stackXmodifier = 0;
+    int stackYmodifier = -2;
 
-    int cycleXmodifier = -2;
-    int cycleYmodifier = 0;
+    double cycleXmodifier = -1.5;
+    int cycleYmodifier = 1;
 
     int cycleNumber = 0;
 
@@ -321,8 +323,8 @@ public class RoadrunnerPointDataset {
 
         // Backing up
         traj4 = lDrive.trajectoryBuilder(traj3.end())
-                .lineTo(new Vector2d(-24, 17))
-                .addSpatialMarker(new Vector2d(-24, 17),() -> {
+                .lineTo(new Vector2d(-24+preloadYmodifier, 19))
+                .addSpatialMarker(new Vector2d(-24+preloadXmodifier, 17),() -> {
                     ArmPosition(stack1, 1);
                     claw(open);
                 })
@@ -344,13 +346,18 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
 
+        traj10 = lDrive.trajectorySequenceBuilder(traj5.end())
+                .strafeTo(new Vector2d(-60+stackXmodifier, 23.5+stackYmodifier+2))
+                .build();
+
         // Go to pole
-        trajSeq6 = lDrive.trajectorySequenceBuilder(traj5.end())
+        trajSeq6 = lDrive.trajectorySequenceBuilder(traj10.end())
                 .lineToLinearHeading(new Pose2d(-24, 20, Math.toRadians(270)))
                 .addSpatialMarker(new Vector2d(-50, 20),() -> {
                     ArmPosition(liftHigh, 0.75);
                 })
                 .build();
+
 
         // Drop off Cone
         traj7 = lDrive.trajectorySequenceBuilder(trajSeq6.end())
@@ -371,8 +378,8 @@ public class RoadrunnerPointDataset {
                 .build();
 
         traj8 = lDrive.trajectoryBuilder(traj7.end())
-                .lineTo(new Vector2d(-24+cycleXmodifier, 17))
-                .addSpatialMarker(new Vector2d(-24, 17),() -> {
+                .lineTo(new Vector2d(-24+cycleXmodifier, 19))
+                .addSpatialMarker(new Vector2d(-24+cycleXmodifier, 17),() -> {
                     if (cycleNumber == 0){
                         ArmPosition(stack1, 1);
                     } else if (cycleNumber == 1){
@@ -389,6 +396,7 @@ public class RoadrunnerPointDataset {
         lDrive.followTrajectory(traj4);
 
         lDrive.followTrajectorySequence(traj5);
+        lDrive.followTrajectorySequence(traj10);
         lDrive.followTrajectorySequence(trajSeq6);
         lDrive.followTrajectorySequence(traj7);
         lDrive.followTrajectory(traj8);
@@ -397,6 +405,7 @@ public class RoadrunnerPointDataset {
         cycleNumber = cycleNumber + 1;
 
         lDrive.followTrajectorySequence(traj5);
+        lDrive.followTrajectorySequence(traj10);
         lDrive.followTrajectorySequence(trajSeq6);
         lDrive.followTrajectorySequence(traj7);
         lDrive.followTrajectory(traj8);

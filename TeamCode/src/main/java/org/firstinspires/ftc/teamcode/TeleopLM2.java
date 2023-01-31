@@ -79,10 +79,22 @@ public class TeleopLM2 extends LinearOpMode {
             }else if(gamepad2.dpad_right) {
                 ArmPosition(liftHigherThanLow);
             }else if(gamepad2.b) {
-                ArmPosition(motorLeft.getCurrentPosition() + 10);
+                ArmPosition(motorLeft.getCurrentPosition() + 100);
             }else if(gamepad2.a) {
-                ArmPosition(motorLeft.getCurrentPosition() - 10);
+                ArmPosition(motorLeft.getCurrentPosition() - 100);
             }
+
+
+            // Telemetry
+            telemetry.addData("Roboracers Teleop for LT", "");
+            telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
+            telemetry.addData("Gamepad 2 Left Stick Y", gamepad2.left_stick_y);
+            telemetry.addData("Left Motor Power: ", motorLeft.getPower());
+            telemetry.addData("Right Motor Power: ", motorRight.getPower());
+            telemetry.addData("Left Motor Encoder Value: ", motorLeft.getCurrentPosition());
+            telemetry.addData("Right Motor Encoder Value: ", motorRight.getCurrentPosition());
+
+            telemetry.update();
 
         }
     }
