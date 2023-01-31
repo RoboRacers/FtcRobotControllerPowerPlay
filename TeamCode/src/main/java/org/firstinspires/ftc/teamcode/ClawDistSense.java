@@ -53,7 +53,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * @see <a href="http://revrobotics.com">REV Robotics Web Page</a>
  */
 @TeleOp(name = "ClawDistanceTest", group = "Sensor")
-//@Disabled
+@Disabled
 public class ClawDistSense extends LinearOpMode {
 
     private DistanceSensor clawRange;
