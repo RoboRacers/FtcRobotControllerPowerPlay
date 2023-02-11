@@ -112,12 +112,13 @@ public class AutoopStateMachines extends LinearOpMode {
         // Import Roadrunner Trajectories
         RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw);
 
+        claw.setPosition(0.45);
         waitForStart();
 
         if (isStopRequested()) return;
 
         Boolean cycle = false;
-        Boolean test = false;
+        Boolean test = true;
         while(opModeIsActive()){
             /* Running Trajectories */
             // Just Parking
@@ -222,9 +223,9 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         drive.setPoseEstimate(new Pose2d(-34, 64.5, Math.toRadians(270)));
-                        if (tagID == 0) { Trajectories.HighPreloadRightV2(); }
-                        else if (tagID == 1) { Trajectories.HighPreloadRightV2(); }
-                        else if (tagID == 2) { Trajectories.HighCycleRightV1(); }
+                        if (tagID == 0) { Trajectories.HighCycleRightV3(); }
+                        else if (tagID == 1) { Trajectories.HighCycleRightV3(); }
+                        else if (tagID == 2) { Trajectories.HighCycleRightV3(); }
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                         break;
                     case STATE_POSITION_SP3:

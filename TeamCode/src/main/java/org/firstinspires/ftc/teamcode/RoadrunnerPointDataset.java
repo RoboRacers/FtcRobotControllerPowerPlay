@@ -243,9 +243,12 @@ public class RoadrunnerPointDataset {
     }
 
     // Medium Cycles Trajectories Init
-    TrajectorySequence traj0;
-
+    TrajectorySequence trajSeq0;
+    Trajectory traj0;
+    TrajectorySequence trajSeq1;
     Trajectory traj1;
+
+    TrajectorySequence trajSeq2;
     Trajectory traj2;
     TrajectorySequence traj3;
     Trajectory traj4;
@@ -260,8 +263,8 @@ public class RoadrunnerPointDataset {
     double preloadXmodifier = -1.5;
     int preloadYmodifier = 1;
 
-    int stackXmodifier = 0;
-    int stackYmodifier = -2;
+    double stackXmodifier = -0.25;
+    int stackYmodifier = 0;
 
     double cycleXmodifier = -1.5;
     int cycleYmodifier = 1;
@@ -275,7 +278,7 @@ public class RoadrunnerPointDataset {
         lDrive.setPoseEstimate(StartPose);
 
         // Starting Shift
-        traj0 = lDrive.trajectorySequenceBuilder(StartPose)
+        trajSeq0 = lDrive.trajectorySequenceBuilder(StartPose)
                 .strafeTo(new Vector2d(-36, 64.5))
                 .build();
 
@@ -389,7 +392,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
 
-        lDrive.followTrajectorySequence(traj0);
+        lDrive.followTrajectorySequence(trajSeq0);
         lDrive.followTrajectory(traj1);
         lDrive.followTrajectory(traj2);
         lDrive.followTrajectorySequence(traj3);
@@ -413,12 +416,80 @@ public class RoadrunnerPointDataset {
         lDrive.update();
     }
 
+    public void HighCycleRightV3 () {
+        Pose2d StartPose = new Pose2d(-33, 64.5, Math.toRadians(270));
+        lDrive.setPoseEstimate(StartPose);
+
+        // Starting Shift
+        trajSeq0 = lDrive.trajectorySequenceBuilder(StartPose)
+                .addSpatialMarker(new Vector2d(-33, 64.5),() -> {
+                    ArmPosition(liftHigh, 0.40);
+                })
+                .splineTo(new Vector2d(-36, 40), Math.toRadians(270))
+                .splineTo(new Vector2d(-30, 8), Math.toRadians(270+38))
+                .build();
+
+        // Go to stack
+        trajSeq1 = lDrive.trajectorySequenceBuilder(trajSeq0.end())
+                .addTemporalMarker(0, () -> {
+                    ArmPosition(liftHigh+350, 1);
+                })
+                .addTemporalMarker(0.5, () -> {
+                    claw(open);
+                })
+                .addTemporalMarker(1, () -> {
+                    ArmPosition(stack1, 1);
+                    claw(open);
+                })
+                .waitSeconds(1)
+                .lineToLinearHeading(new Pose2d(-60+stackXmodifier, 23.5+stackYmodifier, Math.toRadians(180))
+                )
+                .waitSeconds(4)
+                .addTemporalMarker(4, () -> {
+                    claw(open);
+                    ArmPosition(stack1, 1);
+                })
+                .addTemporalMarker(5, () -> {
+                    claw(close);
+                })
+                .addTemporalMarker(6, () -> {
+                    ArmPosition(-500, 0.8);
+                })
+                .build();
+
+        // Go to pole
+        trajSeq2 = lDrive.trajectorySequenceBuilder(trajSeq1.end())
+                .lineToLinearHeading(new Pose2d(-30, 8, Math.toRadians(270+38)))
+                .addSpatialMarker(new Vector2d(-50, 20),() -> {
+                    ArmPosition(liftHigh, 0.75);
+                })
+                .addTemporalMarker(3, () -> {
+                    ArmPosition(liftHigh+350, 1);
+                })
+                .addTemporalMarker(3.5, () -> {
+                    claw(open);
+                })
+                .addTemporalMarker(4, () -> {
+                    ArmPosition(stack1, 1);
+                    claw(open);
+                })
+                .build();
+
+
+        lDrive.followTrajectorySequence(trajSeq0);
+        lDrive.followTrajectorySequence(trajSeq1);
+        lDrive.followTrajectorySequence(trajSeq2);
+        //lDrive.followTrajectory(traj1);
+
+        lDrive.update();
+    }
+
     public void HighCycleRightV1 () {
         Pose2d StartPose = new Pose2d(-33, 64.5, Math.toRadians(270));
         lDrive.setPoseEstimate(StartPose);
 
         // Shift
-        traj0 = lDrive.trajectorySequenceBuilder(StartPose)
+        trajSeq0 = lDrive.trajectorySequenceBuilder(StartPose)
                 .strafeTo(new Vector2d(-36, 64.5))
                 .build();
 
@@ -489,7 +560,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
 
-        lDrive.followTrajectorySequence(traj0);
+        lDrive.followTrajectorySequence(trajSeq0);
         lDrive.followTrajectory(traj1);
         lDrive.followTrajectory(traj2);
         lDrive.followTrajectorySequence(traj3);
@@ -507,7 +578,7 @@ public class RoadrunnerPointDataset {
         lDrive.setPoseEstimate(StartPose);
 
         // Shift
-        traj0 = lDrive.trajectorySequenceBuilder(StartPose)
+        trajSeq0 = lDrive.trajectorySequenceBuilder(StartPose)
                 .strafeTo(new Vector2d(34.5, 64.5))
                 .build();
 
@@ -548,7 +619,7 @@ public class RoadrunnerPointDataset {
                 })
                 .build();
 
-        lDrive.followTrajectorySequence(traj0);
+        lDrive.followTrajectorySequence(trajSeq0);
         lDrive.followTrajectory(traj1);
         lDrive.followTrajectory(traj2);
         lDrive.followTrajectorySequence(traj3);
