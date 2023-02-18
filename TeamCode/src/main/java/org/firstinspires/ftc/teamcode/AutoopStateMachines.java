@@ -223,9 +223,9 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         drive.setPoseEstimate(new Pose2d(-34, 64.5, Math.toRadians(270)));
-                        if (tagID == 0) { Trajectories.HighCycleRightV3(); }
-                        else if (tagID == 1) { Trajectories.HighCycleRightV3(); }
-                        else if (tagID == 2) { Trajectories.HighCycleRightV3(); }
+                        if (tagID == 0) { Trajectories.HighCycleRightV4(); }
+                        else if (tagID == 1) { Trajectories.HighCycleRightV4(); }
+                        else if (tagID == 2) { Trajectories.HighCycleRightV4(); }
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                         break;
                     case STATE_POSITION_SP3:
