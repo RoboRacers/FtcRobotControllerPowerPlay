@@ -251,6 +251,7 @@ public class RoadrunnerPointDataset {
     TrajectorySequence trajSeq2;
     Trajectory traj2;
     TrajectorySequence traj3;
+    TrajectorySequence trajSeq3;
     Trajectory traj4;
     TrajectorySequence traj5;
     Trajectory traj6;
@@ -491,20 +492,68 @@ public class RoadrunnerPointDataset {
         // Starting
 
         traj0 = lDrive.trajectoryBuilder(StartPose, true)
-                .splineTo(new Vector2d(-36, 40), Math.toRadians(270))
-                .splineTo(new Vector2d(-36,12), Math.toRadians(270+38))
+                .addSpatialMarker(new Vector2d(-35, 40),() -> {
+                    ArmPosition(liftHigh, 0.5);
+                    // Flipbar Function Retract
+                 })
+                .splineTo(new Vector2d(-35, 40), Math.toRadians(270))
+                .splineTo(new Vector2d(-35,12), Math.toRadians(270+38))
                 .build();
-        traj1 = lDrive.trajectoryBuilder(traj0.end(), false)
+        trajSeq1 = lDrive.trajectorySequenceBuilder(traj0.end())
+                .waitSeconds(3)
+                .addTemporalMarker(3, () -> {
+                    claw(open);
+                })
+                .addTemporalMarker(3, () -> {
+                    ArmPosition(stack1, 1);
+                })
                 .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
+                .waitSeconds(2)
+                .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
+                    // Flipbar Function Extend
+                    claw(close);
+                })
+                .addTemporalMarker(6, () -> {
+                    // Flipbar Function Retract
+                    ArmPosition(liftHigh, 0.8);
+                })
                 .build();
-        traj2 = lDrive.trajectoryBuilder(traj1.end(), true)
+        traj2 = lDrive.trajectoryBuilder(trajSeq1.end(), true)
                 .splineTo(new Vector2d(-36,12), Math.toRadians(270+38))
+                .addTemporalMarker(3, () -> {
+                    claw(open);
+                    ArmPosition(stack1, 0.8);
+                })
+                .build();
+        trajSeq3 = lDrive.trajectorySequenceBuilder(traj2.end())
+                .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
+                .waitSeconds(3)
+                .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
+                    // Flipbar Function Extend
+                    claw(close);
+                })
+                .addTemporalMarker(5, () -> {
+                    // Flipbar Function Retract
+                    ArmPosition(liftHigh, 0.8);
+                })
                 .build();
 
 
         lDrive.followTrajectory(traj0);
-        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectorySequence(trajSeq1);
         lDrive.followTrajectory(traj2);
+
+        lDrive.followTrajectorySequence(trajSeq3);
+        lDrive.followTrajectory(traj2);
+
+        lDrive.followTrajectorySequence(trajSeq3);
+        lDrive.followTrajectory(traj2);
+
+        lDrive.followTrajectorySequence(trajSeq3);
+        lDrive.followTrajectory(traj2);
+
+
+
         lDrive.update();
     }
 

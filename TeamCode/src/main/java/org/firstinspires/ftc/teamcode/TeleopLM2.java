@@ -11,15 +11,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-@TeleOp
+@TeleOp(name = "Teleop Regionals", group = "16481-Power-Play")
 public class TeleopLM2 extends LinearOpMode {
 
     DcMotorEx motorLeft;
     DcMotorEx motorRight;
-    final int liftLow = 0;
-    final int liftHigherThanLow = -700;
-    final int liftMid = -1000;
-    final int liftHigh = -1275;
+    int commonModifier = 0;
+    int liftLow = 0 + commonModifier;
+    int liftHigherThanLow = -700 + commonModifier;
+    int liftMid = -1000 + commonModifier;
+    int liftHigh = -1275 + commonModifier;
 
     Servo claw;
     DistanceSensor armRangeSensor;
@@ -61,8 +62,7 @@ public class TeleopLM2 extends LinearOpMode {
 
         while (!isStopRequested()) {
 
-
-            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75));
+            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.4, -gamepad1.left_stick_x*.4, -gamepad1.right_stick_x*.75));
             drive.update();
             if(gamepad2.right_bumper) {
                 claw.setPosition(closed);
@@ -73,28 +73,31 @@ public class TeleopLM2 extends LinearOpMode {
                 gamepad1.rumble(500);
                 gamepad2.rumble(500);
             } else if(gamepad2.dpad_up) {
-                ArmPosition(liftHigh);
+                ArmPosition(liftHigh+ commonModifier);
             } else if(gamepad2.dpad_down) {
-                ArmPosition(liftLow);
+                ArmPosition(liftLow+ commonModifier);
             }else if(gamepad2.dpad_left) {
-                ArmPosition(liftMid);
+                ArmPosition(liftMid+ commonModifier);
             }else if(gamepad2.dpad_right) {
-                ArmPosition(liftHigherThanLow);
-            }else if(gamepad2.b) {
-                ArmPosition(motorLeft.getCurrentPosition() + 100);
+                ArmPosition(liftHigherThanLow+ commonModifier);
             }else if(gamepad2.a) {
+                commonModifier = commonModifier + 100;
+                ArmPosition(motorLeft.getCurrentPosition() + 100);
+            }else if(gamepad2.b) {
+                commonModifier = commonModifier - 100;
                 ArmPosition(motorLeft.getCurrentPosition() - 100);
             }
 
 
             // Telemetry
-            telemetry.addData("Roboracers Teleop for LT", "");
+            telemetry.addData("Roboracers Teleop for Regionals", "");
             telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
             telemetry.addData("Gamepad 2 Left Stick Y", gamepad2.left_stick_y);
-            telemetry.addData("Left Motor Power: ", motorLeft.getPower());
-            telemetry.addData("Right Motor Power: ", motorRight.getPower());
-            telemetry.addData("Left Motor Encoder Value: ", motorLeft.getCurrentPosition());
-            telemetry.addData("Right Motor Encoder Value: ", motorRight.getCurrentPosition());
+            telemetry.addData("Left Motor Power", motorLeft.getPower());
+            telemetry.addData("Right Motor Power", motorRight.getPower());
+            telemetry.addData("Left Motor Encoder Value", motorLeft.getCurrentPosition());
+            telemetry.addData("Right Motor Encoder Value", motorRight.getCurrentPosition());
+            telemetry.addData("Common Encoder Modifier", commonModifier);
 
             telemetry.update();
 
