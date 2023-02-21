@@ -25,6 +25,10 @@ public class AutoopStateMachinesLeft extends LinearOpMode {
     DcMotorEx motorRight;
     Servo claw;
 
+    Servo flipbarRight;
+    Servo flipbarLeft;
+    Servo clawRotator;
+
     public enum STATE_POSITION {
         STATE_POSITION_SP9,
         STATE_POSITION_SP0,
@@ -55,6 +59,10 @@ public class AutoopStateMachinesLeft extends LinearOpMode {
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
         claw = hardwareMap.get(Servo.class, "claw");
 
+        flipbarLeft = hardwareMap.get(Servo.class, "flipbarleft");
+        flipbarRight = hardwareMap.get(Servo.class, "flipbarRight");
+        clawRotator = hardwareMap.get(Servo.class, "clawRotator");
+
         motorLeft.setDirection(DcMotorSimple.Direction.FORWARD);
         motorRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -83,6 +91,9 @@ public class AutoopStateMachinesLeft extends LinearOpMode {
         sleep(100);
         int tagID=-1;
 
+        // Set flipbar to resting position
+        flip(0);
+
         telemetry.addData("# Detecting AprilTag ","");
         telemetry.update();
 
@@ -99,7 +110,7 @@ public class AutoopStateMachinesLeft extends LinearOpMode {
         camera.closeCameraDevice();
 
         // Import Roadrunner Trajectories
-        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw);
+        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw, flipbarLeft, flipbarRight, clawRotator);
 
         waitForStart();
 
@@ -195,12 +206,26 @@ public class AutoopStateMachinesLeft extends LinearOpMode {
         }
     }
 
-    /*
-    public void ServoControl(Servo servoControl, double direction) {
-        if(timer_1.milliseconds() >= 100) {
-            servoControl.setPosition(servoControl.getPosition()+direction);
-            timer_1.reset();
+    public void flip(int flipped) {
+        // Retract
+        if (flipped == -1) {
+            flipbarLeft.setPosition(1);
+            flipbarRight.setPosition(0);
+            clawRotator.setPosition(1);
         }
-    }*/
+        // Extend
+        else if (flipped == 1) {
+            flipbarLeft.setPosition(0);
+            flipbarRight.setPosition(1);
+            clawRotator.setPosition(0);
+        }
+        // Rest
+        else if (flipped == 0) {
+            flipbarLeft.setPosition(0.3);
+            flipbarRight.setPosition(0.7);
+            clawRotator.setPosition(1);
+        }
+
+    }
 
 }

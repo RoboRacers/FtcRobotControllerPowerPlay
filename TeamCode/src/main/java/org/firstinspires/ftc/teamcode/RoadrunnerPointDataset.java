@@ -40,10 +40,19 @@ public class RoadrunnerPointDataset {
     DcMotorEx lmotorRight;
     Servo lclaw;
 
-    final double close = 0.7;
-    final double open =0;
+    Servo lflipbarRight;
+    Servo lflipbarLeft;
+    Servo lclawRotator;
 
-    public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry, DcMotorEx motorRight, DcMotorEx motorLeft, Servo claw) {
+    final double close = 0.7;
+    final double open = 0;
+
+    final int retract = -1;
+    final int extend = 1;
+    final int rest = 0;
+
+
+    public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry, DcMotorEx motorRight, DcMotorEx motorLeft, Servo claw, Servo flipbarLeft, Servo flipbarRight, Servo clawRotator) {
         lDrive = drive;
         ltelementry = telemetry;
 
@@ -63,6 +72,11 @@ public class RoadrunnerPointDataset {
         lmotorRight = motorRight;
 
         lclaw = claw;
+
+        lflipbarLeft = flipbarLeft;
+        lflipbarRight = flipbarRight;
+        lclawRotator = clawRotator;
+
     }
 
 
@@ -494,7 +508,6 @@ public class RoadrunnerPointDataset {
         traj0 = lDrive.trajectoryBuilder(StartPose, true)
                 .addSpatialMarker(new Vector2d(-35, 40),() -> {
                     ArmPosition(liftHigh, 0.5);
-                    // Flipbar Function Retract
                  })
                 .splineTo(new Vector2d(-35, 40), Math.toRadians(270))
                 .splineTo(new Vector2d(-35,12), Math.toRadians(270+38))
@@ -510,11 +523,11 @@ public class RoadrunnerPointDataset {
                 .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
                 .waitSeconds(2)
                 .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
-                    // Flipbar Function Extend
+                    flip(extend);
                     claw(close);
                 })
                 .addTemporalMarker(6, () -> {
-                    // Flipbar Function Retract
+                    flip(retract);
                     ArmPosition(liftHigh, 0.8);
                 })
                 .build();
@@ -529,11 +542,11 @@ public class RoadrunnerPointDataset {
                 .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
                 .waitSeconds(3)
                 .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
-                    // Flipbar Function Extend
+                    flip(extend);
                     claw(close);
                 })
                 .addTemporalMarker(5, () -> {
-                    // Flipbar Function Retract
+                    flip(retract);
                     ArmPosition(liftHigh, 0.8);
                 })
                 .build();
@@ -681,5 +694,27 @@ public class RoadrunnerPointDataset {
 
     public void claw(double pos) {
         lclaw.setPosition(pos);
+    }
+
+    public void flip(int flipped) {
+        // Retract
+        if (flipped == -1) {
+            lflipbarLeft.setPosition(1);
+            lflipbarRight.setPosition(0);
+            lclawRotator.setPosition(1);
+        }
+        // Extend
+        else if (flipped == 1) {
+            lflipbarLeft.setPosition(0);
+            lflipbarRight.setPosition(1);
+            lclawRotator.setPosition(0);
+        }
+        // Rest
+        else if (flipped == 0) {
+            lflipbarLeft.setPosition(0.3);
+            lflipbarRight.setPosition(0.7);
+            lclawRotator.setPosition(1);
+        }
+
     }
 }

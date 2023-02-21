@@ -16,14 +16,22 @@ public class TeleopLM2 extends LinearOpMode {
 
     DcMotorEx motorLeft;
     DcMotorEx motorRight;
-    int commonModifier = 0;
-    int liftLow = 0 + commonModifier;
-    int liftHigherThanLow = -700 + commonModifier;
-    int liftMid = -1000 + commonModifier;
-    int liftHigh = -1275 + commonModifier;
 
     Servo claw;
+    Servo flipbarRight;
+    Servo flipbarLeft;
+    Servo clawRotator;
+
     DistanceSensor armRangeSensor;
+
+    int commonModifier = 0;
+    final int liftLow = 0;
+    final int liftHigherThanLow = -700;
+    final int liftMid = -1000;
+    final int liftHigh = -1275;
+
+    double driveSensitivity = .8;
+    double turnSensitivity = .75;
 
     final double closed = 0.45;
     final double open = 0;
@@ -37,6 +45,10 @@ public class TeleopLM2 extends LinearOpMode {
         drive.setPoseEstimate(StartPose);
 
         claw = hardwareMap.get(Servo.class, "claw");
+
+        //flipbarLeft = hardwareMap.get(Servo.class, "flipbarleft");
+        //flipbarRight = hardwareMap.get(Servo.class, "flipbarRight");
+        //clawRotator = hardwareMap.get(Servo.class, "clawRotator");
 
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
@@ -62,8 +74,9 @@ public class TeleopLM2 extends LinearOpMode {
 
         while (!isStopRequested()) {
 
-            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.4, -gamepad1.left_stick_x*.4, -gamepad1.right_stick_x*.75));
+            drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*driveSensitivity, -gamepad1.left_stick_x*driveSensitivity, -gamepad1.right_stick_x*turnSensitivity));
             drive.update();
+
             if(gamepad2.right_bumper) {
                 claw.setPosition(closed);
                 gamepad1.rumble(500);
@@ -73,17 +86,23 @@ public class TeleopLM2 extends LinearOpMode {
                 gamepad1.rumble(500);
                 gamepad2.rumble(500);
             } else if(gamepad2.dpad_up) {
-                ArmPosition(liftHigh+ commonModifier);
+                // Set arm Position to High
+                ArmPosition(liftHigh+commonModifier);
             } else if(gamepad2.dpad_down) {
-                ArmPosition(liftLow+ commonModifier);
+                // Set arm Position to Low
+                ArmPosition(liftLow+commonModifier);
             }else if(gamepad2.dpad_left) {
-                ArmPosition(liftMid+ commonModifier);
+                // Set arm Position to Medium
+                ArmPosition(liftMid+commonModifier);
             }else if(gamepad2.dpad_right) {
-                ArmPosition(liftHigherThanLow+ commonModifier);
+                // Set arm Position to a bit lower than High
+                ArmPosition(liftHigherThanLow+commonModifier);
             }else if(gamepad2.a) {
+                // Change the encoder modifier down
                 commonModifier = commonModifier + 100;
                 ArmPosition(motorLeft.getCurrentPosition() + 100);
             }else if(gamepad2.b) {
+                // Change the encoder modifier up
                 commonModifier = commonModifier - 100;
                 ArmPosition(motorLeft.getCurrentPosition() - 100);
             }
@@ -91,7 +110,7 @@ public class TeleopLM2 extends LinearOpMode {
 
             // Telemetry
             telemetry.addData("Roboracers Teleop for Regionals", "");
-            telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
+            //telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
             telemetry.addData("Gamepad 2 Left Stick Y", gamepad2.left_stick_y);
             telemetry.addData("Left Motor Power", motorLeft.getPower());
             telemetry.addData("Right Motor Power", motorRight.getPower());
@@ -103,6 +122,8 @@ public class TeleopLM2 extends LinearOpMode {
 
         }
     }
+
+    // Function to set the arm position
     public void ArmPosition(int pos) {
         motorLeft.setPower(0);
         motorRight.setPower(0);
@@ -114,9 +135,34 @@ public class TeleopLM2 extends LinearOpMode {
         motorRight.setPower(.75);
     }
 
+    // Function to set the claw position
     public void claw(double posclaw) {
         claw.setPosition(posclaw);
         gamepad1.rumble(500);
         gamepad2.rumble(500);
     }
+
+    public void flip(int flipped) {
+        // Retract
+        if (flipped == -1) {
+            flipbarLeft.setPosition(1);
+            flipbarRight.setPosition(0);
+            clawRotator.setPosition(1);
+        }
+        // Extend
+        else if (flipped == 1) {
+            flipbarLeft.setPosition(0);
+            flipbarRight.setPosition(1);
+            clawRotator.setPosition(0);
+        }
+        // Rest
+        else if (flipped == 0) {
+            flipbarLeft.setPosition(0.3);
+            flipbarRight.setPosition(0.7);
+            clawRotator.setPosition(1);
+        }
+
+    }
+
+
 }

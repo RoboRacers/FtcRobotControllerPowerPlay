@@ -25,6 +25,10 @@ public class AutoopStateMachinesRight extends LinearOpMode {
     DcMotorEx motorRight;
     Servo claw;
 
+    Servo flipbarRight;
+    Servo flipbarLeft;
+    Servo clawRotator;
+
     public enum STATE_POSITION {
         STATE_POSITION_SP9,
         STATE_POSITION_SP0,
@@ -54,6 +58,10 @@ public class AutoopStateMachinesRight extends LinearOpMode {
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
         claw = hardwareMap.get(Servo.class, "claw");
+
+        flipbarLeft = hardwareMap.get(Servo.class, "flipbarleft");
+        flipbarRight = hardwareMap.get(Servo.class, "flipbarRight");
+        clawRotator = hardwareMap.get(Servo.class, "clawRotator");
 
         motorLeft.setDirection(DcMotorSimple.Direction.FORWARD);
         motorRight.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -86,13 +94,15 @@ public class AutoopStateMachinesRight extends LinearOpMode {
         telemetry.addData("# Detecting AprilTag ","");
         telemetry.update();
 
+        // Set flipbar to resting position
+        flip(0);
+
         // We are setting the robot position to Position 2, just because all of them are the same
         RobotPosition = STATE_POSITION.STATE_POSITION_SP2;
         while(!isStopRequested() && !opModeIsActive()) {
             // Repeatedly update the signal ID with new detections from init to opmode start
             tagID = mySignalDetection.CheckSignal();
             telemetry.addData("# Tag ID: ", tagID);
-            telemetry.addData("Position selected ", RobotPosition);
             telemetry.update();
 
         }
@@ -100,7 +110,7 @@ public class AutoopStateMachinesRight extends LinearOpMode {
         camera.closeCameraDevice();
 
         // Import Roadrunner Trajectories
-        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw);
+        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw, flipbarLeft, flipbarRight, clawRotator);
 
         waitForStart();
 
@@ -111,97 +121,50 @@ public class AutoopStateMachinesRight extends LinearOpMode {
             /* Running Trajectories */
             // Just Parking
             if(cycle == false){
-                switch (RobotPosition) {
-                    case STATE_POSITION_SP0:
-                        drive.setPoseEstimate(Trajectories.S0_POS);
-                        if(tagID == 0){ Trajectories.S0PP1(); }
-                        else if (tagID == 1) { Trajectories.S0PP2(); }
-                        else if (tagID == 2){  Trajectories.S0PP3(); }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                    case  STATE_POSITION_SP1:
-                        drive.setPoseEstimate(Trajectories.S1_POS);
-                        if(tagID == 0){ Trajectories.S1PP1(); }
-                        else if (tagID == 1) { Trajectories.S1PP2(); }
-                        else if (tagID == 2) { Trajectories.S1PP3(); }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                    case STATE_POSITION_SP2:
-                        drive.setPoseEstimate(Trajectories.S2_POS);
-                        if (tagID == 0) { Trajectories.S2PP1(); }
-                        else if (tagID == 1) { Trajectories.S2PP2(); }
-                        else if (tagID == 2) { Trajectories.S2PP3(); }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                    case STATE_POSITION_SP3:
-                        drive.setPoseEstimate(Trajectories.S3_POS);
-                        if(tagID == 0){ Trajectories.S3PP1(); }
-                        else if (tagID == 1) { Trajectories.S3PP2(); }
-                        else if (tagID == 2) { Trajectories.S3PP3(); }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                }
+                drive.setPoseEstimate(Trajectories.S2_POS);
+                if (tagID == 0) { Trajectories.S2PP1(); }
+                else if (tagID == 1) { Trajectories.S2PP2(); }
+                else if (tagID == 2) { Trajectories.S2PP3(); }
+                RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                break;
             }
             // Cycle
             else if(cycle == true) {
-                switch (RobotPosition) {
-                    case STATE_POSITION_SP0:
-                        drive.setPoseEstimate(Trajectories.S0_POS);
-                        if (tagID == 0) {
-                            Trajectories.S0PP1();
-                        } else if (tagID == 1) {
-                            Trajectories.S0PP2();
-                        } else if (tagID == 2) {
-                            Trajectories.S0PP3();
-                        }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                    case STATE_POSITION_SP1:
-                        drive.setPoseEstimate(Trajectories.S1_POS);
-                        if (tagID == 0) {
-                            Trajectories.S1PP1();
-                        } else if (tagID == 1) {
-                            Trajectories.S1PP2();
-                        } else if (tagID == 2) {
-                            Trajectories.S1PP3();
-                        }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                    case STATE_POSITION_SP2:
-                        // Run High Preload
-                        Trajectories.HighPreloadRightV2();
-                        // Then run Parking
-                        if (tagID == 0) {
-                            Trajectories.PreloadParkingRightPP1();
-                        } else if (tagID == 1) {
-                            Trajectories.PreloadParkingRightPP2();
-                        } else if (tagID == 2) {
-                            Trajectories.PreloadParkingRightPP3();
-                        }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
-                    case STATE_POSITION_SP3:
-                        drive.setPoseEstimate(Trajectories.S3_POS);
-                        if (tagID == 0) {
-                            Trajectories.S3PP1();
-                        } else if (tagID == 1) {
-                            Trajectories.S3PP2();
-                        } else if (tagID == 2) {
-                            Trajectories.S3PP3();
-                        }
-                        RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
-                        break;
+                // Run High Preload
+                Trajectories.HighPreloadRightV2();
+                // Then run Parking
+                if (tagID == 0) {
+                    Trajectories.PreloadParkingRightPP1();
+                } else if (tagID == 1) {
+                    Trajectories.PreloadParkingRightPP2();
+                } else if (tagID == 2) {
+                    Trajectories.PreloadParkingRightPP3();
                 }
+                RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
+                break;
             }
         }
     }
 
-    /*
-    public void ServoControl(Servo servoControl, double direction) {
-        if(timer_1.milliseconds() >= 100) {
-            servoControl.setPosition(servoControl.getPosition()+direction);
-            timer_1.reset();
+    public void flip(int flipped) {
+        // Retract
+        if (flipped == -1) {
+            flipbarLeft.setPosition(1);
+            flipbarRight.setPosition(0);
+            clawRotator.setPosition(1);
         }
-    }*/
+        // Extend
+        else if (flipped == 1) {
+            flipbarLeft.setPosition(0);
+            flipbarRight.setPosition(1);
+            clawRotator.setPosition(0);
+        }
+        // Rest
+        else if (flipped == 0) {
+            flipbarLeft.setPosition(0.3);
+            flipbarRight.setPosition(0.7);
+            clawRotator.setPosition(1);
+        }
 
+    }
 }
