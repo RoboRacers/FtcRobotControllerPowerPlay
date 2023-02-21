@@ -10,28 +10,59 @@ public class FlipbarTest extends LinearOpMode {
     Servo flipbarLeft;
     Servo flipbarRight;
 
-
-    double zero = 0.0;
-    double one = 1.0;
-
+    static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
+    static final int    CYCLE_MS    =   50;     // period of each cycle
+    static final double MAX_POS     =  1.0;     // Maximum rotational position
+    static final double MIN_POS     =  0.0;     // Minimum rotational position
+    double  position = (MAX_POS - MIN_POS) / 2; // Start at halfway position
+    boolean rampUp = true;
 
     @Override
     public void runOpMode() {
-        flipbarLeft = hardwareMap.get(Servo.class, "flipbarLeft");
-        flipbarRight = hardwareMap.get(Servo.class, "flipbarRight");
+        flipbarLeft = hardwareMap.get(Servo.class, "fpl");
+        flipbarRight = hardwareMap.get(Servo.class, "fpr");
 
         flipbarLeft.setDirection(Servo.Direction.FORWARD);
         flipbarRight.setDirection(Servo.Direction.REVERSE);
 
+        // Wait for the start button
+        telemetry.addData(">", "Press Start to scan Servo." );
+        telemetry.update();
+
+        flipbarLeft.setPosition(position);
+        flipbarRight.setPosition(position);
+
         waitForStart();
+
         while(opModeIsActive()){
-            if(gamepad1.dpad_up) {
-               flipbarLeft.setPosition(zero);
-               flipbarRight.setPosition(-1);
-            } else if(gamepad1.dpad_down) {
-                flipbarLeft.setPosition(one);
-                flipbarRight.setPosition(0);
+            if (rampUp) {
+                // Keep stepping up until we hit the max value.
+                position += INCREMENT ;
+                if (position >= MAX_POS ) {
+                    position = MAX_POS;
+                    rampUp = !rampUp;   // Switch ramp direction
+                }
             }
+            else {
+                // Keep stepping down until we hit the min value.
+                position -= INCREMENT ;
+                if (position <= MIN_POS ) {
+                    position = MIN_POS;
+                    rampUp = !rampUp;  // Switch ramp direction
+                }
+            }
+
+            // Display the current value
+            telemetry.addData("Servo Position", "%5.2f", position);
+            telemetry.addData(">", "Press Stop to end test." );
+            telemetry.update();
+
+            // Set the servo to the new position and pause;
+            flipbarLeft.setPosition(position);
+            flipbarRight.setPosition(position);
+
+            sleep(CYCLE_MS);
+            idle();
         }
     }
 }
