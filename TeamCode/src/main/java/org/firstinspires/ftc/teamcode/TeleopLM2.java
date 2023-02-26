@@ -36,6 +36,11 @@ public class TeleopLM2 extends LinearOpMode {
     final double closed = 0.45;
     final double open = 0;
 
+    final int extend = 1;
+    final int rest = 0;
+    final int retract = -1;
+
+
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -46,9 +51,9 @@ public class TeleopLM2 extends LinearOpMode {
 
         claw = hardwareMap.get(Servo.class, "claw");
 
-        //flipbarLeft = hardwareMap.get(Servo.class, "flipbarleft");
-        //flipbarRight = hardwareMap.get(Servo.class, "flipbarRight");
-        //clawRotator = hardwareMap.get(Servo.class, "clawRotator");
+        //flipbarLeft = hardwareMap.get(Servo.class, "fbl");
+        //flipbarRight = hardwareMap.get(Servo.class, "fbr");
+        //clawRotator = hardwareMap.get(Servo.class, "crt");
 
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
@@ -105,6 +110,11 @@ public class TeleopLM2 extends LinearOpMode {
                 // Change the encoder modifier up
                 commonModifier = commonModifier - 100;
                 ArmPosition(motorLeft.getCurrentPosition() - 100);
+            }else if(gamepad2.x) {
+                // Extend the flipped
+                flip(extend);
+            }else if(gamepad2.y) {
+                flip(retract);
             }
 
 
@@ -146,19 +156,19 @@ public class TeleopLM2 extends LinearOpMode {
         // Retract
         if (flipped == -1) {
             flipbarLeft.setPosition(1);
-            flipbarRight.setPosition(0);
+            flipbarRight.setPosition(1);
             clawRotator.setPosition(1);
         }
         // Extend
         else if (flipped == 1) {
             flipbarLeft.setPosition(0);
-            flipbarRight.setPosition(1);
+            flipbarRight.setPosition(0);
             clawRotator.setPosition(0);
         }
         // Rest
         else if (flipped == 0) {
             flipbarLeft.setPosition(0.3);
-            flipbarRight.setPosition(0.7);
+            flipbarRight.setPosition(0.3);
             clawRotator.setPosition(1);
         }
 

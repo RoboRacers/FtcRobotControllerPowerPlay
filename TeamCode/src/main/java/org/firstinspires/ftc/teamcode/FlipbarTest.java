@@ -10,20 +10,20 @@ public class FlipbarTest extends LinearOpMode {
     Servo flipbarLeft;
     Servo flipbarRight;
 
-    static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
-    static final int    CYCLE_MS    =   50;     // period of each cycle
-    static final double MAX_POS     =  1.0;     // Maximum rotational position
-    static final double MIN_POS     =  0.0;     // Minimum rotational position
+    final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
+    final int    CYCLE_MS    =   50;     // period of each cycle
+    final double MAX_POS     =  1.0;     // Maximum rotational position
+    final double MIN_POS     =  0.0;     // Minimum rotational position
     double  position = (MAX_POS - MIN_POS) / 2; // Start at halfway position
     boolean rampUp = true;
 
     @Override
     public void runOpMode() {
-        flipbarLeft = hardwareMap.get(Servo.class, "fpl");
-        flipbarRight = hardwareMap.get(Servo.class, "fpr");
+        flipbarLeft = hardwareMap.get(Servo.class, "fbl");
+        flipbarRight = hardwareMap.get(Servo.class, "fbr");
 
-        flipbarLeft.setDirection(Servo.Direction.FORWARD);
-        flipbarRight.setDirection(Servo.Direction.REVERSE);
+        flipbarLeft.setDirection(Servo.Direction.REVERSE);
+        flipbarRight.setDirection(Servo.Direction.FORWARD);
 
         // Wait for the start button
         telemetry.addData(">", "Press Start to scan Servo." );

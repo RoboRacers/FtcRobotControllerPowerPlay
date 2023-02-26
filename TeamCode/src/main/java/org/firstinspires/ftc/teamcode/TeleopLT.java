@@ -20,8 +20,11 @@ public class TeleopLT extends LinearOpMode {
     final int liftHigherThanLow = -700;
     final int liftMid = -1000;
     final int liftHigh = -1350;
+    int targetPos = 20;
 
     Servo claw;
+    Servo flipbarLeft;
+    Servo flipbarRight;
     DistanceSensor armRangeSensor;
 
     final double closed = 0.7;
@@ -37,6 +40,12 @@ public class TeleopLT extends LinearOpMode {
 
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
+
+        flipbarLeft = hardwareMap.get(Servo.class, "fbl");
+        flipbarRight = hardwareMap.get(Servo.class, "fbr");
+
+        flipbarLeft.setDirection(Servo.Direction.FORWARD);
+        flipbarRight.setDirection(Servo.Direction.REVERSE);
 
         armRangeSensor = hardwareMap.get(DistanceSensor.class, "armRange");
 
@@ -54,6 +63,8 @@ public class TeleopLT extends LinearOpMode {
 
         while (opModeInInit()) {
             claw(open);
+            flipbarLeft.setPosition(0.5);
+            flipbarRight.setPosition(0.5);
         }
 
 
@@ -62,6 +73,8 @@ public class TeleopLT extends LinearOpMode {
 
             drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75));
             drive.update();
+            flipbarLeft.setPosition(0.5);
+            flipbarRight.setPosition(0.5);
             if(gamepad2.right_bumper) {
                 claw.setPosition(closed);
                 gamepad1.rumble(500);
@@ -82,10 +95,10 @@ public class TeleopLT extends LinearOpMode {
                 ArmPosition(motorLeft.getCurrentPosition() + 10);
             }else if(gamepad2.a) {
                 ArmPosition(motorLeft.getCurrentPosition() - 10);
-            }else if (gamepad2.left_stick_y < -0.5 && armRangeSensor.getDistance(DistanceUnit.MM) < 770) {
+            }else if (gamepad2.left_stick_y < -0.5) {
                 motorLeft.setPower(-0.1);
                 motorRight.setPower(-0.1);
-            }else if (gamepad2.left_stick_y > 0.5 && armRangeSensor.getDistance(DistanceUnit.MM) > 20) {
+            }else if (gamepad2.left_stick_y > 0.5) {
                 motorLeft.setPower(0.1);
                 motorRight.setPower(0.1);
             } else if (gamepad2.left_stick_y == 0) {
@@ -93,12 +106,6 @@ public class TeleopLT extends LinearOpMode {
                 motorRight.setPower(0);
             }
 
-
-            telemetry.addData("deviceName",armRangeSensor.getDeviceName() );
-            telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
-            telemetry.addData("range", String.format("%.01f cm", armRangeSensor.getDistance(DistanceUnit.CM)));
-            telemetry.addData("range", String.format("%.01f m", armRangeSensor.getDistance(DistanceUnit.METER)));
-            telemetry.addData("range", String.format("%.01f in", armRangeSensor.getDistance(DistanceUnit.INCH)));
             telemetry.addData("Gamepad 2 Left Stick X", gamepad2.left_stick_y);
             telemetry.addData("Left Motor", motorLeft.getPower());
             telemetry.addData("Right Motor", motorRight.getPower());
@@ -122,4 +129,6 @@ public class TeleopLT extends LinearOpMode {
         gamepad1.rumble(500);
         gamepad2.rumble(500);
     }
+
+
 }
