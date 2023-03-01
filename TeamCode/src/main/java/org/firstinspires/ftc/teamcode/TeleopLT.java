@@ -16,16 +16,18 @@ public class TeleopLT extends LinearOpMode {
 
     DcMotorEx motorLeft;
     DcMotorEx motorRight;
-    final int liftLow = 0;
-    final int liftHigherThanLow = -700;
-    final int liftMid = -1000;
-    final int liftHigh = -1350;
-    int targetPos = 20;
+    final int liftLow = 20;
+    final int liftHigherThanLow = 300;
+    final int liftMid = 600;
+    final int liftHigh = 800;
+
+    double targetPos = liftLow;
+    double currentArmPos;
 
     Servo claw;
-    Servo flipbarLeft;
-    Servo flipbarRight;
+
     DistanceSensor armRangeSensor;
+    DistanceSensor clawRangeSensor;
 
     final double closed = 0.7;
     final double open = 0;
@@ -41,13 +43,8 @@ public class TeleopLT extends LinearOpMode {
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
 
-        flipbarLeft = hardwareMap.get(Servo.class, "fbl");
-        flipbarRight = hardwareMap.get(Servo.class, "fbr");
-
-        flipbarLeft.setDirection(Servo.Direction.FORWARD);
-        flipbarRight.setDirection(Servo.Direction.REVERSE);
-
         armRangeSensor = hardwareMap.get(DistanceSensor.class, "armRange");
+        clawRangeSensor = hardwareMap.get(DistanceSensor.class, "clawRange");
 
         motorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRight.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -61,10 +58,12 @@ public class TeleopLT extends LinearOpMode {
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+
+
         while (opModeInInit()) {
             claw(open);
-            flipbarLeft.setPosition(0.5);
-            flipbarRight.setPosition(0.5);
+            ArmPosition(liftLow);
+            currentArmPos = armRangeSensor.getDistance(DistanceUnit.MM);
         }
 
 
@@ -73,8 +72,9 @@ public class TeleopLT extends LinearOpMode {
 
             drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*.80, -gamepad1.left_stick_x*.80, -gamepad1.right_stick_x*.75));
             drive.update();
-            flipbarLeft.setPosition(0.5);
-            flipbarRight.setPosition(0.5);
+
+
+
             if(gamepad2.right_bumper) {
                 claw.setPosition(closed);
                 gamepad1.rumble(500);
@@ -87,18 +87,18 @@ public class TeleopLT extends LinearOpMode {
                 ArmPosition(liftHigh);
             } else if(gamepad2.dpad_down) {
                 ArmPosition(liftLow);
-            }else if(gamepad2.dpad_left) {
+            } else if(gamepad2.dpad_left) {
                 ArmPosition(liftMid);
-            }else if(gamepad2.dpad_right) {
+            } else if(gamepad2.dpad_right) {
                 ArmPosition(liftHigherThanLow);
-            }else if(gamepad2.b) {
+            } else if(gamepad2.b) {
                 ArmPosition(motorLeft.getCurrentPosition() + 10);
-            }else if(gamepad2.a) {
+            } else if(gamepad2.a) {
                 ArmPosition(motorLeft.getCurrentPosition() - 10);
-            }else if (gamepad2.left_stick_y < -0.5) {
+            } else if (gamepad2.left_stick_y < -0.5) {
                 motorLeft.setPower(-0.1);
                 motorRight.setPower(-0.1);
-            }else if (gamepad2.left_stick_y > 0.5) {
+            } else if (gamepad2.left_stick_y > 0.5) {
                 motorLeft.setPower(0.1);
                 motorRight.setPower(0.1);
             } else if (gamepad2.left_stick_y == 0) {
@@ -106,22 +106,24 @@ public class TeleopLT extends LinearOpMode {
                 motorRight.setPower(0);
             }
 
+            if (targetPos < currentArmPos - 20){
+                motorLeft.setPower(-0.1);
+                motorRight.setPower(-0.1);
+            } else if (targetPos > currentArmPos + 20){
+                motorLeft.setPower(0.1);
+                motorRight.setPower(0.1);
+            }
+
             telemetry.addData("Gamepad 2 Left Stick X", gamepad2.left_stick_y);
             telemetry.addData("Left Motor", motorLeft.getPower());
             telemetry.addData("Right Motor", motorRight.getPower());
+            telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
 
             telemetry.update();
         }
     }
     public void ArmPosition(int pos) {
-        motorLeft.setPower(0);
-        motorRight.setPower(0);
-        motorRight.setTargetPosition(pos);
-        motorLeft.setTargetPosition(pos);
-        motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorLeft.setPower(.75);
-        motorRight.setPower(.75);
+        targetPos = pos;
     }
 
     public void claw(double posclaw) {

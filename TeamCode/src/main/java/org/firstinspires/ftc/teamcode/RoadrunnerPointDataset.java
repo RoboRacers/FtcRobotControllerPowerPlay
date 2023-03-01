@@ -40,10 +40,6 @@ public class RoadrunnerPointDataset {
     DcMotorEx lmotorRight;
     Servo lclaw;
 
-    Servo lflipbarRight;
-    Servo lflipbarLeft;
-    Servo lclawRotator;
-
     final double close = 0.7;
     final double open = 0;
 
@@ -52,7 +48,7 @@ public class RoadrunnerPointDataset {
     final int rest = 0;
 
 
-    public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry, DcMotorEx motorRight, DcMotorEx motorLeft, Servo claw, Servo flipbarLeft, Servo flipbarRight, Servo clawRotator) {
+    public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry, DcMotorEx motorRight, DcMotorEx motorLeft, Servo claw) {
         lDrive = drive;
         ltelementry = telemetry;
 
@@ -72,10 +68,6 @@ public class RoadrunnerPointDataset {
         lmotorRight = motorRight;
 
         lclaw = claw;
-
-        lflipbarLeft = flipbarLeft;
-        lflipbarRight = flipbarRight;
-        lclawRotator = clawRotator;
 
     }
 
@@ -437,55 +429,42 @@ public class RoadrunnerPointDataset {
 
         // Starting Shift
         trajSeq0 = lDrive.trajectorySequenceBuilder(StartPose)
-                .addSpatialMarker(new Vector2d(-33, 64.5),() -> {
-                    ArmPosition(liftHigh, 0.40);
+                .addSpatialMarker(new Vector2d(-33, 40),() -> {
+                    ArmPosition(liftHigh, 0.60);
                 })
                 .splineTo(new Vector2d(-36, 40), Math.toRadians(270))
-                .splineTo(new Vector2d(-30, 8), Math.toRadians(270+38))
+                .splineTo(new Vector2d(-29, 8), Math.toRadians(270+38))
                 .build();
 
         // Go to stack
         trajSeq1 = lDrive.trajectorySequenceBuilder(trajSeq0.end())
-                .addTemporalMarker(0, () -> {
-                    ArmPosition(liftHigh+350, 1);
-                })
-                .addTemporalMarker(0.5, () -> {
-                    claw(open);
-                })
                 .addTemporalMarker(1, () -> {
-                    ArmPosition(stack1, 1);
                     claw(open);
                 })
                 .waitSeconds(1)
-                .lineToLinearHeading(new Pose2d(-60+stackXmodifier, 23.5+stackYmodifier, Math.toRadians(180))
-                )
-                .waitSeconds(4)
-                .addTemporalMarker(4, () -> {
-                    claw(open);
-                    ArmPosition(stack1, 1);
+                .addTemporalMarker(3, () -> {
+                    ArmPosition(stack1, 0.6);
                 })
+                .lineToLinearHeading(new Pose2d(-60+stackXmodifier, 22+stackYmodifier, Math.toRadians(180))
+                )
                 .addTemporalMarker(5, () -> {
                     claw(close);
                 })
-                .addTemporalMarker(6, () -> {
-                    ArmPosition(-500, 0.8);
-                })
                 .build();
-
+        traj1 = lDrive.trajectoryBuilder(trajSeq1.end())
+                .addDisplacementMarker(() -> {
+                    ArmPosition(-500, 0.75);
+                })
+                .lineTo(new Vector2d(-60+stackXmodifier, 22+stackYmodifier+2))
+                .build();
         // Go to pole
-        trajSeq2 = lDrive.trajectorySequenceBuilder(trajSeq1.end())
-                .lineToLinearHeading(new Pose2d(-30, 8, Math.toRadians(270+38)))
+        trajSeq2 = lDrive.trajectorySequenceBuilder(traj1.end())
+                .lineToLinearHeading(new Pose2d(-29, 9, Math.toRadians(270+38)))
+                .waitSeconds(5)
                 .addSpatialMarker(new Vector2d(-50, 20),() -> {
                     ArmPosition(liftHigh, 0.75);
                 })
-                .addTemporalMarker(3, () -> {
-                    ArmPosition(liftHigh+350, 1);
-                })
-                .addTemporalMarker(3.5, () -> {
-                    claw(open);
-                })
-                .addTemporalMarker(4, () -> {
-                    ArmPosition(stack1, 1);
+                .addTemporalMarker(5.5, () -> {
                     claw(open);
                 })
                 .build();
@@ -523,11 +502,11 @@ public class RoadrunnerPointDataset {
                 .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
                 .waitSeconds(2)
                 .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
-                    flip(extend);
+
                     claw(close);
                 })
                 .addTemporalMarker(6, () -> {
-                    flip(retract);
+
                     ArmPosition(liftHigh, 0.8);
                 })
                 .build();
@@ -542,11 +521,11 @@ public class RoadrunnerPointDataset {
                 .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
                 .waitSeconds(3)
                 .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
-                    flip(extend);
+
                     claw(close);
                 })
                 .addTemporalMarker(5, () -> {
-                    flip(retract);
+
                     ArmPosition(liftHigh, 0.8);
                 })
                 .build();
@@ -696,25 +675,5 @@ public class RoadrunnerPointDataset {
         lclaw.setPosition(pos);
     }
 
-    public void flip(int flipped) {
-        // Retract
-        if (flipped == -1) {
-            lflipbarLeft.setPosition(1);
-            lflipbarRight.setPosition(0);
-            lclawRotator.setPosition(1);
-        }
-        // Extend
-        else if (flipped == 1) {
-            lflipbarLeft.setPosition(0);
-            lflipbarRight.setPosition(1);
-            lclawRotator.setPosition(0);
-        }
-        // Rest
-        else if (flipped == 0) {
-            lflipbarLeft.setPosition(0.3);
-            lflipbarRight.setPosition(0.7);
-            lclawRotator.setPosition(1);
-        }
 
-    }
 }

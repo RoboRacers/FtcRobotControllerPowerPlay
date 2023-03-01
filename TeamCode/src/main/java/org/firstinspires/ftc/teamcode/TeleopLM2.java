@@ -11,16 +11,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-@TeleOp(name = "Teleop Regionals", group = "16481-Power-Play")
+@TeleOp(name = "Teleop For League Tournament", group = "16481-Power-Play")
 public class TeleopLM2 extends LinearOpMode {
 
     DcMotorEx motorLeft;
     DcMotorEx motorRight;
 
     Servo claw;
-    Servo flipbarRight;
-    Servo flipbarLeft;
-    Servo clawRotator;
 
     DistanceSensor armRangeSensor;
 
@@ -50,10 +47,6 @@ public class TeleopLM2 extends LinearOpMode {
         drive.setPoseEstimate(StartPose);
 
         claw = hardwareMap.get(Servo.class, "claw");
-
-        //flipbarLeft = hardwareMap.get(Servo.class, "fbl");
-        //flipbarRight = hardwareMap.get(Servo.class, "fbr");
-        //clawRotator = hardwareMap.get(Servo.class, "crt");
 
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
@@ -110,16 +103,10 @@ public class TeleopLM2 extends LinearOpMode {
                 // Change the encoder modifier up
                 commonModifier = commonModifier - 100;
                 ArmPosition(motorLeft.getCurrentPosition() - 100);
-            }else if(gamepad2.x) {
-                // Extend the flipped
-                flip(extend);
-            }else if(gamepad2.y) {
-                flip(retract);
             }
 
-
             // Telemetry
-            telemetry.addData("Roboracers Teleop for Regionals", "");
+            telemetry.addData("Roboracers Teleop for League Tournament", "");
             //telemetry.addData("range", String.format("%.01f mm", armRangeSensor.getDistance(DistanceUnit.MM)));
             telemetry.addData("Gamepad 2 Left Stick Y", gamepad2.left_stick_y);
             telemetry.addData("Left Motor Power", motorLeft.getPower());
@@ -151,28 +138,4 @@ public class TeleopLM2 extends LinearOpMode {
         gamepad1.rumble(500);
         gamepad2.rumble(500);
     }
-
-    public void flip(int flipped) {
-        // Retract
-        if (flipped == -1) {
-            flipbarLeft.setPosition(1);
-            flipbarRight.setPosition(1);
-            clawRotator.setPosition(1);
-        }
-        // Extend
-        else if (flipped == 1) {
-            flipbarLeft.setPosition(0);
-            flipbarRight.setPosition(0);
-            clawRotator.setPosition(0);
-        }
-        // Rest
-        else if (flipped == 0) {
-            flipbarLeft.setPosition(0.3);
-            flipbarRight.setPosition(0.3);
-            clawRotator.setPosition(1);
-        }
-
-    }
-
-
 }

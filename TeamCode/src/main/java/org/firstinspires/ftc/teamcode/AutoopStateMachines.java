@@ -36,10 +36,6 @@ public class AutoopStateMachines extends LinearOpMode {
     DcMotorEx motorRight;
     Servo claw;
 
-    Servo flipbarRight;
-    Servo flipbarLeft;
-    Servo clawRotator;
-
     public enum STATE_POSITION {
         STATE_POSITION_SP9,
         STATE_POSITION_SP0,
@@ -70,10 +66,6 @@ public class AutoopStateMachines extends LinearOpMode {
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
         claw = hardwareMap.get(Servo.class, "claw");
 
-        flipbarLeft = hardwareMap.get(Servo.class, "flipbarleft");
-        flipbarRight = hardwareMap.get(Servo.class, "flipbarRight");
-        clawRotator = hardwareMap.get(Servo.class, "clawRotator");
-
         motorLeft.setDirection(DcMotorSimple.Direction.FORWARD);
         motorRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -103,7 +95,7 @@ public class AutoopStateMachines extends LinearOpMode {
         int tagID=-1;
 
         // Set flipbar to resting position
-        flip(0);
+
 
         telemetry.addData("# Detecting AprilTag ","");
         telemetry.update();
@@ -121,7 +113,7 @@ public class AutoopStateMachines extends LinearOpMode {
         camera.closeCameraDevice();
 
         // Import Roadrunner Trajectories
-        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw, flipbarLeft, flipbarRight, clawRotator);
+        RoadrunnerPointDataset Trajectories = new RoadrunnerPointDataset(drive, (MultipleTelemetry) telemetry, motorRight, motorLeft, claw);
 
         claw.setPosition(0.45);
         waitForStart();
@@ -234,9 +226,9 @@ public class AutoopStateMachines extends LinearOpMode {
                         break;
                     case STATE_POSITION_SP2:
                         drive.setPoseEstimate(new Pose2d(-34, 64.5, Math.toRadians(270)));
-                        if (tagID == 0) { Trajectories.HighCycleRightV4(); }
-                        else if (tagID == 1) { Trajectories.HighCycleRightV4(); }
-                        else if (tagID == 2) { Trajectories.HighCycleRightV4(); }
+                        if (tagID == 0) { Trajectories.HighCycleRightV3(); }
+                        else if (tagID == 1) { Trajectories.HighCycleRightV3(); }
+                        else if (tagID == 2) { Trajectories.HighCycleRightV3(); }
                         RobotPosition = STATE_POSITION.STATE_POSITION_SP9;
                         break;
                     case STATE_POSITION_SP3:
@@ -249,27 +241,5 @@ public class AutoopStateMachines extends LinearOpMode {
                 }
             }
         }
-    }
-
-    public void flip(int flipped) {
-        // Retract
-        if (flipped == -1) {
-            flipbarLeft.setPosition(1);
-            flipbarRight.setPosition(0);
-            clawRotator.setPosition(1);
-        }
-        // Extend
-        else if (flipped == 1) {
-            flipbarLeft.setPosition(0);
-            flipbarRight.setPosition(1);
-            clawRotator.setPosition(0);
-        }
-        // Rest
-        else if (flipped == 0) {
-            flipbarLeft.setPosition(0.3);
-            flipbarRight.setPosition(0.7);
-            clawRotator.setPosition(1);
-        }
-
     }
 }
