@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.modules;
 
 import android.content.Context;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -38,7 +39,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.modules.opencv.ConeDetection;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvWebcam;
-
+@Disabled
 @TeleOp(name="readwriteTest OpMode", group="Linear Opmode")
 public class readwriteTest extends LinearOpMode {
 

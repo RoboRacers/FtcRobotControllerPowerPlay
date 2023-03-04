@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 @TeleOp
+@Disabled
 public class TeleopLT extends LinearOpMode {
 
     DcMotorEx motorLeft;
@@ -34,17 +36,15 @@ public class TeleopLT extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        // Drive Setup
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        claw = hardwareMap.get(Servo.class, "claw");
-
+        // Motor and Servo Setup
         motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
-
-        armRangeSensor = hardwareMap.get(DistanceSensor.class, "armRange");
-        clawRangeSensor = hardwareMap.get(DistanceSensor.class, "clawRange");
+        claw = hardwareMap.get(Servo.class, "claw");
 
         motorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRight.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -58,12 +58,12 @@ public class TeleopLT extends LinearOpMode {
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
+        // Sensor Setup
+        clawRangeSensor = hardwareMap.get(DistanceSensor.class, "clawRange");
 
         while (opModeInInit()) {
             claw(open);
             ArmPosition(liftLow);
-            currentArmPos = armRangeSensor.getDistance(DistanceUnit.MM);
         }
 
 
@@ -104,14 +104,6 @@ public class TeleopLT extends LinearOpMode {
             } else if (gamepad2.left_stick_y == 0) {
                 motorLeft.setPower(0);
                 motorRight.setPower(0);
-            }
-
-            if (targetPos < currentArmPos - 20){
-                motorLeft.setPower(-0.1);
-                motorRight.setPower(-0.1);
-            } else if (targetPos > currentArmPos + 20){
-                motorLeft.setPower(0.1);
-                motorRight.setPower(0.1);
             }
 
             telemetry.addData("Gamepad 2 Left Stick X", gamepad2.left_stick_y);

@@ -30,7 +30,7 @@ public class TeleopRegionals extends LinearOpMode {
     final double liftLow = 30.0;
     final double liftHigherThanLow = 300.0;
     final double liftMid = 600.0;
-    final double liftHigh = 800.0;
+    final double liftHigh = 950.0;
 
     double liftSpeed = 0.4;
 
