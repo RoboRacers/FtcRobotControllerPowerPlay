@@ -39,7 +39,7 @@ public class TeleopLM2 extends LinearOpMode {
 
     int motorEncoderAvg;
 
-    final double closed = 0.45;
+    final double closed = 0.25;
     final double open = 0;
 
     // Lift Control States

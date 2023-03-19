@@ -27,10 +27,12 @@ public class TeleopRegionals extends LinearOpMode {
     final double turnSensitivity = 0.75;
 
     // Lift and Servo Constants
-    final double liftLow = 30.0;
-    final double liftHigherThanLow = 300.0;
-    final double liftMid = 600.0;
-    final double liftHigh = 950.0;
+    final int liftLow = 0;
+    final int liftHigherThanLow = -750;
+    final int liftMid = -1075;
+    final int liftHigh = -1350;
+
+
 
     double liftSpeed = 0.4;
 
@@ -129,21 +131,17 @@ public class TeleopRegionals extends LinearOpMode {
 
             // Arm Preset Control
             if(gamepad2.dpad_up) {
-                ResetMotorMode();
-                RunToTarget = true;
-                targetPos = liftHigh;
+                // Set arm Position to High
+                ArmPosition(liftHigh);
             } else if(gamepad2.dpad_down) {
-                ResetMotorMode();
-                RunToTarget = true;
-                targetPos = liftLow;
-            } else if(gamepad2.dpad_left) {
-                ResetMotorMode();
-                RunToTarget = true;
-                targetPos = liftMid;
-            } else if(gamepad2.dpad_right) {
-                ResetMotorMode();
-                RunToTarget = true;
-                targetPos = liftHigherThanLow;
+                // Set arm Position to Low
+                ArmPosition(liftLow);
+            }else if(gamepad2.dpad_left) {
+                // Set arm Position to Medium
+                ArmPosition(liftMid);
+            }else if(gamepad2.dpad_right) {
+                // Set arm Position to a bit lower than High
+                ArmPosition(liftHigherThanLow);
             }
 
             // Update the Lift Motors based on the TargetPos and CurrentArmPos

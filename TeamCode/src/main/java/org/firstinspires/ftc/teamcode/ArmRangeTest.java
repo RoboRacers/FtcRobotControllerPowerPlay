@@ -27,7 +27,7 @@ public class ArmRangeTest extends LinearOpMode {
 
     double liftSpeed = 0.4;
 
-    final double closed = 0.45;
+    final double closed = 0.25;
     final double open = 0;
 
     double targetPos = liftLow;

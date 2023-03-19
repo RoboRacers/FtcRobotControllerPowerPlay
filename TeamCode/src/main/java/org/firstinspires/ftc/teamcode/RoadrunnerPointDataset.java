@@ -30,22 +30,18 @@ public class RoadrunnerPointDataset {
     public final Pose2d S2_POS = new Pose2d(-36, 64.5, Math.toRadians(270));
     public final Pose2d S3_POS = new Pose2d(-36, -64.5, Math.toRadians(-270));
 
+    int stack1 = -300;
     final int liftLow = 0;
-    int stack1 = -285;
-    final int liftHigherThanLow = -600;
-    final int liftMid = -900;
-    final int liftHigh = -1275;
+    final int liftHigherThanLow = -750;
+    final int liftMid = -1075;
+    final int liftHigh = -1350;
 
     DcMotorEx lmotorLeft;
     DcMotorEx lmotorRight;
     Servo lclaw;
 
-    final double close = 0.7;
+    final double close = 0.25;
     final double open = 0;
-
-    final int retract = -1;
-    final int extend = 1;
-    final int rest = 0;
 
 
     public RoadrunnerPointDataset(SampleMecanumDrive drive, MultipleTelemetry telemetry, DcMotorEx motorRight, DcMotorEx motorLeft, Servo claw) {
@@ -489,73 +485,71 @@ public class RoadrunnerPointDataset {
     }
 
     public void HighCycleRightV4 () {
-        Pose2d StartPose = new Pose2d(-33.5, 64, Math.toRadians(90));
+        Pose2d StartPose = new Pose2d(-33, 64.5, Math.toRadians(270));
         lDrive.setPoseEstimate(StartPose);
 
-        // Starting
-
-        traj0 = lDrive.trajectoryBuilder(StartPose, true)
-                .addSpatialMarker(new Vector2d(-35, 40),() -> {
-                    ArmPosition(liftHigh, 0.5);
-                 })
-                .splineTo(new Vector2d(-35, 40), Math.toRadians(270))
-                .splineTo(new Vector2d(-35,12), Math.toRadians(270+38))
+        // Starting Shift
+        trajSeq0 = lDrive.trajectorySequenceBuilder(StartPose)
+                .strafeTo(new Vector2d(-36, 64.5))
                 .build();
-        trajSeq1 = lDrive.trajectorySequenceBuilder(traj0.end())
-                .waitSeconds(3)
-                .addTemporalMarker(3, () -> {
-                    claw(open);
-                })
-                .addTemporalMarker(3, () -> {
-                    ArmPosition(stack1, 1);
-                })
-                .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
-                .waitSeconds(2)
-                .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
 
+        // Preload
+        traj1 = lDrive.trajectoryBuilder(trajSeq0.end())
+                .lineTo(new Vector2d(-36, 15),
+                        lDrive.getVelocityConstraint(85, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        lDrive.getAccelerationConstraint(50)
+                )
+                .addSpatialMarker(new Vector2d(-36, 45),() -> {
                     claw(close);
                 })
-                .addTemporalMarker(6, () -> {
+                .addSpatialMarker(new Vector2d(-36, 20),() -> {
+                    ArmPosition(-170, 1);
+                })
+                .build();
 
-                    ArmPosition(liftHigh, 0.8);
+        // Shift to Pole
+        traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .strafeTo(new Vector2d(-25, 15))
+                .addSpatialMarker(new Vector2d(-24, 15),() -> {
+                    ArmPosition(liftHigh, 1);
                 })
                 .build();
-        traj2 = lDrive.trajectoryBuilder(trajSeq1.end(), true)
-                .splineTo(new Vector2d(-36,12), Math.toRadians(270+38))
-                .addTemporalMarker(3, () -> {
-                    claw(open);
-                    ArmPosition(stack1, 0.8);
-                })
-                .build();
+
+        // Drop-Off
         trajSeq3 = lDrive.trajectorySequenceBuilder(traj2.end())
-                .splineTo(new Vector2d(-60+stackXmodifier,19+stackYmodifier), Math.toRadians(180))
-                .waitSeconds(3)
-                .addSpatialMarker(new Vector2d(-60+stackXmodifier,19+stackYmodifier),() -> {
 
-                    claw(close);
+                .lineTo(new Vector2d(-25+preloadXmodifier, 11+preloadYmodifier),
+                        lDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        lDrive.getAccelerationConstraint(25)
+                )
+                .waitSeconds(1)
+                .addTemporalMarker(1, () -> {
+                    ArmPosition(liftHigh+350, 1);
                 })
-                .addTemporalMarker(5, () -> {
-
-                    ArmPosition(liftHigh, 0.8);
+                .addTemporalMarker(1.5, () -> {
+                    claw(open);
+                })
+                .addTemporalMarker(1.75, () -> {
+                    ArmPosition(liftHigh, 1);
                 })
                 .build();
 
 
-        lDrive.followTrajectory(traj0);
-        lDrive.followTrajectorySequence(trajSeq1);
-        lDrive.followTrajectory(traj2);
+        // Backing up
+        traj4 = lDrive.trajectoryBuilder(trajSeq3.end())
+                .lineTo(new Vector2d(-24+preloadYmodifier, 19))
+                .addSpatialMarker(new Vector2d(-24+preloadXmodifier, 17),() -> {
+                    ArmPosition(stack1, 1);
+                    claw(open);
+                })
+                .build();
 
+
+        lDrive.followTrajectorySequence(trajSeq0);
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
         lDrive.followTrajectorySequence(trajSeq3);
-        lDrive.followTrajectory(traj2);
-
-        lDrive.followTrajectorySequence(trajSeq3);
-        lDrive.followTrajectory(traj2);
-
-        lDrive.followTrajectorySequence(trajSeq3);
-        lDrive.followTrajectory(traj2);
-
-
-
+        lDrive.followTrajectory(traj4);
         lDrive.update();
     }
 
@@ -569,7 +563,7 @@ public class RoadrunnerPointDataset {
                 .build();
 
         // Preload
-        traj1 = lDrive.trajectoryBuilder(traj0.end())
+        traj1 = lDrive.trajectoryBuilder(trajSeq0.end())
                 .lineTo(new Vector2d(34.5, 12))
                 .addSpatialMarker(new Vector2d(34.5, 45),() -> {
                     claw(close);
@@ -619,7 +613,7 @@ public class RoadrunnerPointDataset {
     public void PreloadParkingRightPP1 () {
         lDrive.setPoseEstimate(new Pose2d(-24, 16, Math.toRadians(270)));
         Trajectory parkingtraj1 = lDrive.trajectoryBuilder(new Pose2d(-24, 16, Math.toRadians(270)))
-                .strafeTo(new Vector2d(-12, 16))
+                .strafeTo(new Vector2d(-13, 16))
                 .build();
         lDrive.followTrajectory(parkingtraj1);
         lDrive.update();
@@ -646,7 +640,7 @@ public class RoadrunnerPointDataset {
     public void PreloadParkingLeftPP1 () {
         lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
         Trajectory parkingtraj1 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
-                .strafeTo(new Vector2d(60, 14))
+                .strafeTo(new Vector2d(62, 14))
                 .build();
         lDrive.followTrajectory(parkingtraj1);
         lDrive.update();
