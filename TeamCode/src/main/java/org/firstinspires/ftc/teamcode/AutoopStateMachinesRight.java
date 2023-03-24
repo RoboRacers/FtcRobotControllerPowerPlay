@@ -120,7 +120,7 @@ public class AutoopStateMachinesRight extends LinearOpMode {
             // Cycle
             else if(cycle == true) {
                 // Run High Preload
-                Trajectories.HighCycleRightV3();
+                Trajectories.HighCycleRightV4();
                 // Then run Parking
                 if (tagID == 0) {
                     Trajectories.PreloadParkingRightPP1();
