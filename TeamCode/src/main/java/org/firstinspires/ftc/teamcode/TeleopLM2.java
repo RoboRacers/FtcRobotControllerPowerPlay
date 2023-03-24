@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.MasterConfig;
 
 @TeleOp(name = "Teleop For League Tournament", group = "16481-Power-Play")
 public class TeleopLM2 extends LinearOpMode {
@@ -54,7 +55,7 @@ public class TeleopLM2 extends LinearOpMode {
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Motor and Servo Setup
-        motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
+        motorLeft = hardwareMap.get(DcMotorEx.class, MasterConfig.motorLeft);
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
         claw = hardwareMap.get(Servo.class, "claw");
 
