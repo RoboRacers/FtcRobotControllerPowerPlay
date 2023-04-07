@@ -4,12 +4,18 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.*;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 public class AlphaUpdate {
 
     // Calculates the estimated movement of the robot based on controller input
-    static Pose2d mecanumPoseDeltaCalc(Pose2d robotPose, Gamepad gamepad){
+    public static Pose2d mecanumPoseDeltaCalc(SampleMecanumDrive robotDrive, Gamepad gamepad, ElapsedTime timer){
+
+        double loopTime = timer.milliseconds(); // in ms
+
+        Pose2d robotPose = robotDrive.getPoseEstimate();
 
         // Get Gamepad stick values
         double leftStickX = gamepad.left_stick_x;
@@ -17,8 +23,6 @@ public class AlphaUpdate {
         double rightStickX = gamepad.right_stick_x;
 
         double maxVelocity = ((MAX_RPM / 60) * GEAR_RATIO * WHEEL_RADIUS * 2 * Math.PI) * 0.95; // in in/s
-
-        double loopTime = 10.0; // in ms
 
         // Overall stick input
         double setPower = Math.abs(leftStickX) + Math.abs(leftStickY);
@@ -40,7 +44,7 @@ public class AlphaUpdate {
         double angleOfMovement = robotPose.getHeading() + movementOrientation;
 
         double deltaX = distanceTraveled * Math.cos(angleOfMovement);
-        double deltaY = distanceTraveled + Math.sin(angleOfMovement);
+        double deltaY = distanceTraveled * Math.sin(angleOfMovement);
         double deltaHeading = 0; // place holder
 
         Pose2d deltaPose = new Pose2d(deltaX,deltaY, deltaHeading);
