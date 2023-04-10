@@ -87,3 +87,5 @@ lint/tmp/
 # lint/reports/
 
 .DS_Store
+java_pid16820.hprof
+java_pid31984.hprof
