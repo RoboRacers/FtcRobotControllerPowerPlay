@@ -11,6 +11,7 @@ public class SensorBuffer {
 
     StandardTrackingWheelLocalizer trackingWheelLocalizer;
     Pose2d trackingWheelPose;
+    double trackingWheelWeight = 1.1;
 
     public SensorBuffer(HardwareMap hardwareMap){
         if (hasTrackingWheels){
