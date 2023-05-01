@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 
+/**
+ * Class to store and load sensor values used by the MCL (Monte Carlo Localizer)
+ */
 public class SensorBuffer {
     /* Flags for user to change */
     public boolean hasTrackingWheels = true;

@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.gaeldrive.geometry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 
-/*
- * A class to represent a pose and a weight, the building block of the particle filter
+/**
+ * A class to represent a pose and a weight, the building block of the particle filter.
  */
 public class Particle {
 
