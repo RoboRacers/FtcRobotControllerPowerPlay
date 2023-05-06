@@ -18,6 +18,7 @@ public class MonteCarloLocalizer implements Localizer {
 
     Particle[] particles;
     int particleCount = 50;
+    
     Pose2d  poseEstimate;
     SensorBuffer sensors;
 
@@ -51,6 +52,7 @@ public class MonteCarloLocalizer implements Localizer {
     @Override
     public void update() {
         this.sensors.update();
+        poseEstimate = this.sensors.trackingWheelPose;
     }
 
 
