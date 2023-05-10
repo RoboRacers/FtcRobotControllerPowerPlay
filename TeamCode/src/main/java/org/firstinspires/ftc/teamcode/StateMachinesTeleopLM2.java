@@ -25,6 +25,15 @@ public class StateMachinesTeleopLM2 extends LinearOpMode {
         STATE_ARM_MANUAL_UP,
         STATE_ARM_MANUAL_DOWN
     }
+    /*
+    public enum STATE_ARM {
+        STATE_ARM_LOW,
+        STATE_ARM_MED,
+        STATE_ARM_HIGH,
+        STATE_ARM_MANUAL_UP,
+        STATE_ARM_MANUAL_DOWN
+    }*/
+
     //Setting Current state for each section to desired starting state
     public AutoopStateMachines.STATE_CLAW InitCLAW = AutoopStateMachines.STATE_CLAW.STATE_CLAW_OPEN;
 
@@ -34,7 +43,6 @@ public class StateMachinesTeleopLM2 extends LinearOpMode {
                 InitCLAW = AutoopStateMachines.STATE_CLAW.STATE_CLAW_CLOSE;
                 break;
         }
-
             switch (STATE_CLAW.STATE_CLAW_OPEN) {
                 case (if gamepad2.x):
                     InitCLAW = AutoopStateMachines.STATE_CLAW.STATE_CLAW_CLOSE;
@@ -44,6 +52,6 @@ public class StateMachinesTeleopLM2 extends LinearOpMode {
             case (if gamepad2.y):
                 InitCLAW = AutoopStateMachines.STATE_CLAW.STATE_CLAW_OPEN;
                 break;
-        }
+            }
         }
     }
