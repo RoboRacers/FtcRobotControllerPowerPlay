@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.autonomous;
 
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -10,15 +10,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.AutoopStateMachines;
-import org.firstinspires.ftc.teamcode.AutoopStateMachinesLeft;
-import org.firstinspires.ftc.teamcode.AutoopStateMachinesRight;
-import java.io.*;
-import java.util.*;
+import org.firstinspires.ftc.teamcode.autonomous.AutoopStateMachines;
 
 public class RoadrunnerPointDataset {
 
@@ -656,6 +651,33 @@ public class RoadrunnerPointDataset {
     }
 
     public void PreloadParkingLeftPP3 () {
+        lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
+        Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
+                .strafeTo(new Vector2d(12, 14))
+                .build();
+        lDrive.followTrajectory(parkingtraj3);
+        lDrive.update();
+    }
+
+    public void DemoAuto1 () {
+        lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
+        Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
+                .strafeTo(new Vector2d(12, 14))
+                .build();
+        lDrive.followTrajectory(parkingtraj3);
+        lDrive.update();
+    }
+
+    public void DemoAuto2 () {
+        lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
+        Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
+                .strafeTo(new Vector2d(12, 14))
+                .build();
+        lDrive.followTrajectory(parkingtraj3);
+        lDrive.update();
+    }
+
+    public void DemoAuto3 () {
         lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
         Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
                 .strafeTo(new Vector2d(12, 14))

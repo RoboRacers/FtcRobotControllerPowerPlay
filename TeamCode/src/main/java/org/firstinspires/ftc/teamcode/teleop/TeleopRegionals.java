@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -10,38 +10,42 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.MasterConfig;
+import org.firstinspires.ftc.teamcode.test.LiftPID;
 
-@TeleOp(name = "Teleop For League Tournament", group = "16481-Power-Play")
-public class TeleopLM2 extends LinearOpMode {
+@TeleOp(name = "Teleop For Regionals", group = "16481-Power-Play")
+public class TeleopRegionals extends LinearOpMode {
 
     DcMotorEx motorLeft;
     DcMotorEx motorRight;
 
-    Servo claw;
-
+    DistanceSensor armRangeSensor;
     DistanceSensor clawRangeSensor;
 
-    double clawDist;
+    Servo claw;
 
-    int previousTargetEncoderValue;
-    int targetEncoderValue;
-    int previousCommonModifier;
-    int commonModifier = 0;
-    int baseEncoderValue;
+    // Drive Control Constants
+    final double driveSensitivity = 0.80;
+    final double turnSensitivity = 0.75;
+
+    // Lift and Servo Constants
     final int liftLow = 0;
     final int liftHigherThanLow = -750;
     final int liftMid = -1075;
     final int liftHigh = -1350;
 
-    double driveSensitivity = .5;
-    double turnSensitivity = .75;
-    double liftSpeed = .5;
+
+
+    double liftSpeed = 0.4;
+
+    final double closed = 0.45;
+    final double open = 0;
+
+    // Sensor Control Values
+    double targetPos = liftLow;
+    double currentArmPos;
+    double clawDist;
 
     int motorEncoderAvg;
-
-    final double closed = 0.25;
-    final double open = 0;
 
     // Lift Control States
     boolean RunToTarget = false;
@@ -55,7 +59,7 @@ public class TeleopLM2 extends LinearOpMode {
         drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Motor and Servo Setup
-        motorLeft = hardwareMap.get(DcMotorEx.class, MasterConfig.motorLeft);
+        motorLeft = hardwareMap.get(DcMotorEx.class, "LiftLeft");
         motorRight = hardwareMap.get(DcMotorEx.class, "LiftRight");
         claw = hardwareMap.get(Servo.class, "claw");
 
@@ -72,60 +76,33 @@ public class TeleopLM2 extends LinearOpMode {
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Sensor Setup
-        //clawRangeSensor = hardwareMap.get(DistanceSensor.class, "clawRange");
+        armRangeSensor = hardwareMap.get(DistanceSensor.class, "armRange");
+        clawRangeSensor = hardwareMap.get(DistanceSensor.class, "clawRange");
 
+        // PID Setup
+        LiftPID myLift = new LiftPID();
 
         while (opModeInInit()) {
-            claw(open);
+            currentArmPos = armRangeSensor.getDistance(DistanceUnit.MM);
         }
 
         while (!isStopRequested()) {
-            //clawDist = clawRangeSensor.getDistance(DistanceUnit.MM);
-            previousCommonModifier = commonModifier;
-            previousTargetEncoderValue = targetEncoderValue;
+
+            /*--Drive Control--*/
             drive.setWeightedDrivePower(new Pose2d(-gamepad1.left_stick_y*driveSensitivity, -gamepad1.left_stick_x*driveSensitivity, -gamepad1.right_stick_x*turnSensitivity));
             drive.update();
 
-            if(gamepad2.right_bumper) {
-                claw.setPosition(closed);
-                gamepad1.rumble(500);
-                gamepad2.rumble(500);
-            } else if(gamepad2.left_bumper){
-                claw.setPosition(open);
-                gamepad1.rumble(500);
-                gamepad2.rumble(500);
-            } else if(gamepad2.dpad_up) {
-                // Set arm Position to High
-                baseEncoderValue = liftHigh;
-            } else if(gamepad2.dpad_down) {
-                // Set arm Position to Low
-                baseEncoderValue = liftLow;
-            }else if(gamepad2.dpad_left) {
-                // Set arm Position to Medium
-                baseEncoderValue = liftMid;
-            }else if(gamepad2.dpad_right) {
-                // Set arm Position to a bit lower than High
-                baseEncoderValue = liftHigherThanLow;
-            }else if(gamepad2.a) {
-                // Change the encoder modifier down
-                commonModifier = 100;
-                //ArmPosition(motorLeft.getCurrentPosition() + 100);
-            }else if(gamepad2.b) {
-                // Change the encoder modifier up
-                commonModifier = -100;
-                //ArmPosition(motorLeft.getCurrentPosition() - 100);
-            } else if(gamepad2.x) {
-                // Change the encoder modifier up
-                commonModifier = 0;
-                //ArmPosition(motorLeft.getCurrentPosition() - 100);
-            }
-            targetEncoderValue = baseEncoderValue + commonModifier;
-            /*
+            /*--Arm Control--*/
+            currentArmPos = armRangeSensor.getDistance(DistanceUnit.MM);
+            clawDist = clawRangeSensor.getDistance(DistanceUnit.MM);
+
             // Arm manual control
             // If Stick Goes up, Go up
             if (gamepad2.left_stick_y < -0.1) {
                 ResetMotorMode();
+                RunToTarget = false;
                 EncoderPIDRunning = false;
+
                 if (gamepad2.left_stick_y < -0.5){
                     setMotorSpeed(-0.25);
                 } else {
@@ -135,6 +112,7 @@ public class TeleopLM2 extends LinearOpMode {
             // If Stick goes down, go down
             else if (gamepad2.left_stick_y > 0.1) {
                 ResetMotorMode();
+                RunToTarget = false;
                 EncoderPIDRunning = false;
                 if (gamepad2.left_stick_y > 0.5){
                     setMotorSpeed(0.25/2);
@@ -147,67 +125,73 @@ public class TeleopLM2 extends LinearOpMode {
                     && -0.5 < gamepad2.left_stick_y
                     && RunToTarget == false && EncoderPIDRunning == false){
                 motorEncoderAvg = (motorLeft.getCurrentPosition() + motorRight.getCurrentPosition())/2;
-                targetEncoderValue = motorEncoderAvg;
+                ArmPosition(motorEncoderAvg);
+                RunToTarget = false;
                 EncoderPIDRunning = true;
             }
 
-             */
+            // Arm Preset Control
+            if(gamepad2.dpad_up) {
+                // Set arm Position to High
+                ArmPosition(liftHigh);
+            } else if(gamepad2.dpad_down) {
+                // Set arm Position to Low
+                ArmPosition(liftLow);
+            }else if(gamepad2.dpad_left) {
+                // Set arm Position to Medium
+                ArmPosition(liftMid);
+            }else if(gamepad2.dpad_right) {
+                // Set arm Position to a bit lower than High
+                ArmPosition(liftHigherThanLow);
+            }
 
-            /*--Claw Control--
+            // Update the Lift Motors based on the TargetPos and CurrentArmPos
+            if (RunToTarget) {
+                if (currentArmPos > targetPos + 10) {
+                    setMotorSpeed(-myLift.getTargetVelocity( targetPos - currentArmPos));
+                } else if (currentArmPos < targetPos - 10){
+                    setMotorSpeed(-myLift.getTargetVelocity( targetPos - currentArmPos));
+                }else if (targetPos - 5 < currentArmPos && currentArmPos < targetPos + 5) {
+                    motorEncoderAvg = (motorLeft.getCurrentPosition() + motorRight.getCurrentPosition())/2;
+                    ArmPosition(motorEncoderAvg);
+                    RunToTarget = false;
+                    EncoderPIDRunning = true;
+                }
+            }
+
+            /*--Claw Control--*/
+            if(gamepad2.right_bumper) {
+                claw(closed);
+            } else if(gamepad2.left_bumper){
+                claw(open);
+            }
             if (gamepad2.right_trigger > 0.5 && clawDist < 35) {
                 claw(closed);
             }
 
-             */
-
-            if (previousTargetEncoderValue != targetEncoderValue){
-                ArmPosition(targetEncoderValue);
-            }
-
-
 
             // Telemetry
-            telemetry.addData("Roboracers Teleop for League Tournament", "");
-            telemetry.addData("Gamepad 2 Left Stick Y", gamepad2.left_stick_y);
-            telemetry.addData("Left Motor Power", motorLeft.getPower());
-            telemetry.addData("Right Motor Power", motorRight.getPower());
-            telemetry.addData("RunToPosition Desired Encoder Value", targetEncoderValue);
-            telemetry.addData("Left Motor Encoder Value", motorLeft.getCurrentPosition());
-            telemetry.addData("Right Motor Encoder Value", motorRight.getCurrentPosition());
-            telemetry.addData("Common Encoder Modifier", commonModifier);
+            telemetry.addData("Gamepad 2 Left Stick X", gamepad2.left_stick_y);
+            telemetry.addData("Left Motor", motorLeft.getPower());
+            telemetry.addData("Right Motor", motorRight.getPower());
+            telemetry.addData("Using Lift Controller", RunToTarget);
+            telemetry.addData("Using Encoder PID", EncoderPIDRunning);
+            telemetry.addData("Target Position", targetPos);
+            telemetry.addData("Current Arm Postion", String.format("%.01f mm", currentArmPos));
+            telemetry.addData("Current Claw Distance", String.format("%.01f mm", clawDist));
             telemetry.update();
-
         }
     }
 
-    // Function to set the arm position
     public void ArmPosition(int pos) {
-        targetEncoderValue = pos;
         motorLeft.setPower(0);
         motorRight.setPower(0);
         motorRight.setTargetPosition(pos);
         motorLeft.setTargetPosition(pos);
         motorLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motorRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motorLeft.setPower(liftSpeed);
-        motorRight.setPower(liftSpeed);
-    }
-
-    // Function to set the claw position
-    public void claw(double posclaw) {
-        claw.setPosition(posclaw);
-        gamepad1.rumble(500);
-        gamepad2.rumble(500);
-    }
-
-    // Function to set the claw position
-    public void changeCommonModifier(int modifier, int change, int down) {
-        if (down == -1){
-            modifier = modifier - change;
-        } else if (down == 1){
-            modifier = modifier + change;
-        }
-        commonModifier = modifier;
+        motorLeft.setPower(.75);
+        motorRight.setPower(.75);
     }
 
     public void ResetMotorMode() {
@@ -219,5 +203,11 @@ public class TeleopLM2 extends LinearOpMode {
     {
         motorLeft.setPower(speed);
         motorRight.setPower(speed);
+    }
+
+    public void claw(double posclaw) {
+        claw.setPosition(posclaw);
+        gamepad1.rumble(500);
+        gamepad2.rumble(500);
     }
 }
