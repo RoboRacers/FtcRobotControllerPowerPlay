@@ -624,7 +624,7 @@ public class RoadrunnerPointDataset {
     }
 
     public void PreloadParkingRightPP3 () {
-        lDrive.setPoseEstimate(new Pose2d(-24, 16, Math.toRadians(270)));
+        lDrive.setPoseEstimate(new Pose2d(-24, 16, Math.toRadians(90)));
         Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(-24, 16, Math.toRadians(270)))
                 .strafeTo(new Vector2d(-60, 16))
                 .build();
@@ -660,29 +660,60 @@ public class RoadrunnerPointDataset {
     }
 
     public void DemoAuto1 () {
-        lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
-        Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
-                .strafeTo(new Vector2d(12, 14))
+        lDrive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                .forward(60)
                 .build();
-        lDrive.followTrajectory(parkingtraj3);
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .addDisplacementMarker(() -> {
+                    ArmPosition(liftMid, 0.75);
+                })
+                .strafeRight(24)
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
         lDrive.update();
     }
 
     public void DemoAuto2 () {
-        lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
-        Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
-                .strafeTo(new Vector2d(12, 14))
+        lDrive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                .forward(48)
                 .build();
-        lDrive.followTrajectory(parkingtraj3);
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .addDisplacementMarker(()-> {
+                    ArmPosition(liftMid, 0.7);
+                })
+                .strafeRight(24)
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .forward(12)
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+        lDrive.turn(Math.toRadians(360+45));
         lDrive.update();
     }
 
     public void DemoAuto3 () {
-        lDrive.setPoseEstimate(new Pose2d(24, 14, Math.toRadians(270)));
-        Trajectory parkingtraj3 = lDrive.trajectoryBuilder(new Pose2d(24, 14, Math.toRadians(270)))
-                .strafeTo(new Vector2d(12, 14))
+        lDrive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
+        Trajectory traj1 = lDrive.trajectoryBuilder(new Pose2d(0, 0, Math.toRadians(90)))
+                .forward(50)
                 .build();
-        lDrive.followTrajectory(parkingtraj3);
+        Trajectory traj2 = lDrive.trajectoryBuilder(traj1.end())
+                .addDisplacementMarker(()-> {
+                    ArmPosition(liftMid, 0.7);
+                })
+                .strafeLeft(22)
+                .build();
+        Trajectory traj3 = lDrive.trajectoryBuilder(traj2.end())
+                .forward(12)
+                .build();
+        lDrive.followTrajectory(traj1);
+        lDrive.followTrajectory(traj2);
+        lDrive.followTrajectory(traj3);
+        lDrive.turn(Math.toRadians(-360-45));
         lDrive.update();
     }
 

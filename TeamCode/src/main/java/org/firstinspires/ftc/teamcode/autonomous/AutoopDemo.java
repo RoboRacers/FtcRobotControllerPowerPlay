@@ -20,7 +20,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 // Localization is doesn't show drift, follower if it does
 
 @Config
-@Autonomous(name = "AutoOp State Machines", group = "16481-Power-Play")
+@Autonomous(name = "Demo Autonomous", group = "16481-Power-Play")
 public class AutoopDemo extends LinearOpMode {
 
     // Declare the motors and servos
@@ -103,7 +103,7 @@ public class AutoopDemo extends LinearOpMode {
         while(opModeIsActive()){
             /* Running Trajectories */
             if(cycle == false && test == false){
-                drive.setPoseEstimate(new Pose2d(-34, 64.5, Math.toRadians(270)));
+                drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
                 if (tagID == 0) { Trajectories.DemoAuto1(); }
                 else if (tagID == 1) { Trajectories.DemoAuto2(); }
                 else if (tagID == 2) { Trajectories.DemoAuto3(); }
