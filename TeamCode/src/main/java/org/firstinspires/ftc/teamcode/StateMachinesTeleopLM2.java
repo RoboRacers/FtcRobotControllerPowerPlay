@@ -9,10 +9,10 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-
+/*
 @TeleOp(name = "Teleop For League Tournament", group = "16481-Power-Play")
 public class StateMachinesTeleopLM2 extends LinearOpMode {
-
+    /*
  //Turning power play teleOp into state machines
      public enum STATE_CLAW {
         STATE_CLAW_OPEN,
@@ -25,14 +25,14 @@ public class StateMachinesTeleopLM2 extends LinearOpMode {
         STATE_ARM_MANUAL_UP,
         STATE_ARM_MANUAL_DOWN
     }
-    /*
+
     public enum STATE_ARM {
         STATE_ARM_LOW,
         STATE_ARM_MED,
         STATE_ARM_HIGH,
         STATE_ARM_MANUAL_UP,
         STATE_ARM_MANUAL_DOWN
-    }*/
+    }
 
     //Setting Current state for each section to desired starting state
     public AutoopStateMachines.STATE_CLAW InitCLAW = AutoopStateMachines.STATE_CLAW.STATE_CLAW_OPEN;
@@ -54,4 +54,5 @@ public class StateMachinesTeleopLM2 extends LinearOpMode {
                 break;
             }
         }
-    }
+     */
+
