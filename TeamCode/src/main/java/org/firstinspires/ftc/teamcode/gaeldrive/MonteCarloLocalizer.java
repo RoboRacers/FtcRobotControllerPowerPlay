@@ -65,10 +65,6 @@ public class MonteCarloLocalizer implements Localizer {
 
     }
 
-    public void resampleParticles () {
-
-    }
-
     public void weighParticles () {
         for (int currentParticle = 0; currentParticle < particleCount; currentParticle++){
             double confidence = 0.0;
@@ -79,4 +75,10 @@ public class MonteCarloLocalizer implements Localizer {
             }
         }
     }
+
+    public void resampleParticles () {
+
+    }
+
+
 }
